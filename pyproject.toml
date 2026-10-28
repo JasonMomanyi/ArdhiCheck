@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "ardhicheck"
+version = "0.1.0"
+description = "AI agent that checks Kenyan land survey plans for internal consistency and restricted-land overlap."
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Jason Orandi Momanyi"},
+]
+
+dependencies = [
+    "numpy>=1.24",
+    "pyproj>=3.6",
+    "shapely>=2.0",
+]
+
+[project.optional-dependencies]
+meta = [
+    "openai>=1.0",
+]
+dev = [
+    "pytest>=7.0",
+    "ruff>=0.4",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 99
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP"]
