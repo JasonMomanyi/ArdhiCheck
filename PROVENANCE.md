@@ -16,7 +16,9 @@ An AI coding agent was used for scaffolding, code generation, and development as
 |---|---|---|---|
 | numpy | >=1.24 | BSD-3-Clause | Numerical computation |
 | pyproj | >=3.6 | MIT | Coordinate reference system transforms |
-| shapely | >=2.0 | BSD-3-Clause | Geometric operations |
+| shapely | >=2.0 | BSD-3-Clause | Geometric operations & spatial reserve screening |
+| httpx | >=0.25 | BSD-3-Clause | HTTP client for dev.meta.ai Meta Model API |
+| pillow | >=10.0 | HPND | Survey plan and satellite raster generation |
 | pytest | >=7.0 | MIT | Test framework (dev) |
 | ruff | >=0.4 | MIT | Linter / formatter (dev) |
 | openai | >=1.0 | Apache-2.0 | Meta Model API client (optional) |
