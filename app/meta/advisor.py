@@ -595,22 +595,9 @@ def _generate_spark_advisory(
                 "Write a 3-paragraph executive brief advising whether it is worth buying, "
                 "the environmental/legal risks, and price justification."
             )
-            headers = {
-                "Authorization": f"Bearer {client.api_key}",
-                "Content-Type": "application/json",
-            }
-            resp = client.client.post(
-                f"{client.base_url}/responses",
-                headers=headers,
-                json={"model": "muse-spark-1.3", "input": prompt},
-            )
-            if resp.status_code == 200:
-                data = resp.json()
-                out = data.get("output_text") or data.get("choices", [{}])[0].get(
-                    "message", {}
-                ).get("content")
-                if out:
-                    return out
+            out = client.call_chat_completion([{"role": "user", "content": prompt}])
+            if out:
+                return out
         except Exception:
             pass
 

@@ -117,3 +117,4 @@ def test_evaluate_land_parcel_overpriced_caution() -> None:
     res = evaluate_land_parcel(coords, asking_price_kes=800_000_000.0)
     assert res.decision_verdict == "CAUTION"
     assert "OVERPRICED" in res.decision_summary
+

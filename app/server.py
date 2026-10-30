@@ -91,7 +91,8 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
                 {
                     "status": "healthy",
                     "live_meta_api": meta_client.is_live,
-                    "model": "muse-spark-1.3",
+                    "model": meta_client.model,
+                    "base_url": meta_client.base_url,
                     "satellite_model": "sam-3.1",
                     "event": "Meta Global AI Developer Hackathon (Oct 26 - Nov 4, 2026)",
                 }
@@ -276,6 +277,9 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
                 payload = {}
 
             api_key = payload.get("api_key") or os.environ.get("MODEL_API_KEY", "").strip()
+            base_url = payload.get("base_url") or os.environ.get("MODEL_BASE_URL", "").strip()
+            model = payload.get("model") or os.environ.get("MODEL_NAME", "").strip()
+
             if not api_key:
                 self._send_json(
                     {
@@ -285,40 +289,40 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
                             "No MODEL_API_KEY set. Running in high-fidelity demo mode "
                             "with deterministic model emulation."
                         ),
-                        "model": "muse-spark-1.3",
+                        "model": model or "muse-spark-1.3",
                     }
                 )
                 return
 
-            client = MetaModelClient(api_key=api_key)
+            client = MetaModelClient(
+                api_key=api_key,
+                base_url=base_url or None,
+                model=model or None,
+            )
             start_t = time.time()
             try:
-                headers = {
-                    "Authorization": f"Bearer {api_key}",
-                    "Content-Type": "application/json",
-                }
-                resp = client.client.post(
-                    f"{client.base_url}/responses",
-                    headers=headers,
-                    json={
-                        "model": "muse-spark-1.3",
-                        "input": "ArdhiCheck system ping. Respond with 'Online'.",
-                    },
-                    timeout=15.0,
+                out_text = client.call_chat_completion(
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": (
+                                "ArdhiCheck system ping. Respond with 'Online - Meta Model Ready'."
+                            ),
+                        }
+                    ]
                 )
                 latency_ms = int((time.time() - start_t) * 1000)
-                if resp.status_code == 200:
-                    data = resp.json()
-                    out_text = data.get("output_text") or "Online"
+                if out_text:
                     self._send_json(
                         {
                             "status": "live",
                             "connected": True,
-                            "model": "muse-spark-1.3",
+                            "model": client.model,
+                            "base_url": client.base_url,
                             "latency_ms": latency_ms,
-                            "response_sample": out_text[:100],
+                            "response_sample": out_text[:120].strip(),
                             "message": (
-                                "Meta Model API connected successfully with active credits!"
+                                f"Connected to {client.model} at {client.base_url}!"
                             ),
                         }
                     )
@@ -327,8 +331,7 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
                         {
                             "status": "error",
                             "connected": False,
-                            "http_code": resp.status_code,
-                            "message": f"API returned HTTP {resp.status_code}: {resp.text[:200]}",
+                            "message": f"Model returned empty response from {client.base_url}",
                         },
                         status=HTTPStatus.BAD_GATEWAY,
                     )
@@ -337,7 +340,7 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
                     {
                         "status": "connection_failed",
                         "connected": False,
-                        "message": f"Could not connect to https://api.meta.ai/v1: {exc}",
+                        "message": f"Could not connect to {client.base_url}: {exc}",
                     },
                     status=HTTPStatus.GATEWAY_TIMEOUT,
                 )
@@ -355,15 +358,34 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
                 return
 
             new_key = payload.get("api_key", "").strip()
+            new_base_url = payload.get("base_url", "").strip()
+            new_model = payload.get("model", "").strip()
+
             if new_key:
                 os.environ["MODEL_API_KEY"] = new_key
+                if new_base_url:
+                    os.environ["MODEL_BASE_URL"] = new_base_url
+                if new_model:
+                    os.environ["MODEL_NAME"] = new_model
+
                 try:
                     dotenv_file = BASE_DIR / ".env"
-                    dotenv_file.write_text(f"MODEL_API_KEY={new_key}\n", encoding="utf-8")
+                    env_lines = [f"MODEL_API_KEY={new_key}\n"]
+                    if new_base_url:
+                        env_lines.append(f"MODEL_BASE_URL={new_base_url}\n")
+                    if new_model:
+                        env_lines.append(f"MODEL_NAME={new_model}\n")
+                    dotenv_file.write_text("".join(env_lines), encoding="utf-8")
                 except Exception:
                     pass
                 self._send_json(
-                    {"status": "ok", "message": "MODEL_API_KEY successfully updated and saved."}
+                    {
+                        "status": "ok",
+                        "message": (
+                            f"Model configuration saved! Active: {new_model or 'muse-spark-1.3'}"
+                        ),
+                        "model": new_model or "muse-spark-1.3",
+                    }
                 )
             else:
                 self._send_json(

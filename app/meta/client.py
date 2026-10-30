@@ -81,11 +81,18 @@ class SatelliteAnalysisResult:
 
 
 class MetaModelClient:
-    """Client for Meta Model API (dev.meta.ai)."""
+    """Client for Meta Model API (dev.meta.ai, Groq, OpenRouter, Together AI)."""
 
-    def __init__(self, api_key: str | None = None, base_url: str = META_API_BASE_URL) -> None:
+    def __init__(
+        self,
+        api_key: str | None = None,
+        base_url: str | None = None,
+        model: str | None = None,
+    ) -> None:
         self.api_key = api_key or os.environ.get("MODEL_API_KEY", "").strip()
-        self.base_url = base_url.rstrip("/")
+        env_base = os.environ.get("MODEL_BASE_URL", "").strip()
+        self.base_url = (base_url or env_base or META_API_BASE_URL).rstrip("/")
+        self.model = model or os.environ.get("MODEL_NAME", "").strip() or DEFAULT_MODEL
         self.client = httpx.Client(timeout=60.0)
 
     @property
@@ -93,13 +100,65 @@ class MetaModelClient:
         """True if a valid-looking API key is configured."""
         return bool(self.api_key and len(self.api_key) > 5)
 
+    def call_chat_completion(
+        self,
+        messages: list[dict[str, Any]],
+        temperature: float = 0.2,
+        response_format: dict[str, Any] | None = None,
+    ) -> str:
+        """Execute a completion via /chat/completions or /responses endpoint."""
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+
+        # Try standard OpenAI-compatible /chat/completions (Groq, OpenRouter, etc.)
+        payload: dict[str, Any] = {
+            "model": self.model,
+            "messages": messages,
+            "temperature": temperature,
+        }
+        if response_format:
+            payload["response_format"] = response_format
+
+        try:
+            resp = self.client.post(
+                f"{self.base_url}/chat/completions", headers=headers, json=payload
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                if "choices" in data and data["choices"]:
+                    return data["choices"][0].get("message", {}).get("content", "")
+                if "output_text" in data:
+                    return data["output_text"]
+        except Exception:
+            pass
+
+        # Fallback to dev.meta.ai style /responses
+        resp_payload: dict[str, Any] = {
+            "model": self.model,
+            "input": messages if len(messages) > 1 else messages[0].get("content", ""),
+        }
+        if response_format:
+            resp_payload["response_format"] = response_format
+
+        resp = self.client.post(f"{self.base_url}/responses", headers=headers, json=resp_payload)
+        resp.raise_for_status()
+        data = resp.json()
+
+        if "output_text" in data:
+            return data["output_text"]
+        if "choices" in data and data["choices"]:
+            return data["choices"][0].get("message", {}).get("content", "")
+        return data.get("content", "")
+
     def extract_plan_from_image(
         self,
         image_bytes: bytes,
         mime_type: str = "image/png",
         preset_hint: str | None = None,
     ) -> PlanExtractionResult:
-        """Extract survey readings and metadata from a plan image using Muse Spark 1.3."""
+        """Extract survey readings and metadata from a plan image using Meta models."""
         if self.is_live:
             try:
                 return self._extract_live(image_bytes, mime_type)
@@ -109,13 +168,13 @@ class MetaModelClient:
         return self._extract_fallback(image_bytes, preset_hint)
 
     def _extract_live(self, image_bytes: bytes, mime_type: str) -> PlanExtractionResult:
-        """Invoke Muse Spark 1.3 via Responses API with image input."""
+        """Invoke Meta vision model via chat completions with image input."""
         b64_image = base64.b64encode(image_bytes).decode("utf-8")
         data_url = f"data:{mime_type};base64,{b64_image}"
 
         system_instruction = (
             "You are an expert surveyor reading Kenyan survey deed plans. "
-            "Extract the parcel metadata and the table of boundary traverse readings. "
+            "Extract parcel metadata and boundary traverse readings. "
             "Return valid JSON matching this structure:\n"
             "{\n"
             '  "lr_number": "L.R. 209/...",\n'
@@ -124,45 +183,42 @@ class MetaModelClient:
             '  "stated_area": 0.50,\n'
             '  "stated_unit": "ha",\n'
             '  "datum_name": "arc1960_utm37s",\n'
-            '  "legs": [["045°30\'15"", "100.000"], ...],\n'
+            '  "legs": [["045°30\'15\\"", "100.000"], ...],\n'
             '  "notes": ["..."]\n'
             "}"
         )
 
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
+        messages = [
+            {"role": "system", "content": system_instruction},
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": "Extract all boundary traverse readings from this survey plan.",
+                    },
+                    {"type": "image_url", "image_url": {"url": data_url}},
+                ],
+            },
+        ]
 
-        payload = {
-            "model": DEFAULT_MODEL,
-            "input": [
-                {"role": "system", "content": system_instruction},
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": (
-                                "Extract all boundary traverse readings from this survey plan."
-                            ),
-                        },
-                        {"type": "image_url", "image_url": {"url": data_url}},
-                    ],
-                },
-            ],
-            "response_format": {"type": "json_object"},
-        }
+        content_text = self.call_chat_completion(
+            messages=messages,
+            response_format={"type": "json_object"},
+        )
 
-        resp = self.client.post(f"{self.base_url}/responses", headers=headers, json=payload)
-        resp.raise_for_status()
-        data = resp.json()
+        # Parse JSON robustly
+        cleaned = content_text.strip()
+        if "```json" in cleaned:
+            cleaned = cleaned.split("```json", 1)[1].split("```", 1)[0].strip()
+        elif "```" in cleaned:
+            cleaned = cleaned.split("```", 1)[1].split("```", 1)[0].strip()
+        s_idx = cleaned.find("{")
+        e_idx = cleaned.rfind("}")
+        if s_idx != -1 and e_idx != -1:
+            cleaned = cleaned[s_idx : e_idx + 1]
 
-        # Parse output
-        content_text = data.get("output_text") or data.get("choices", [{}])[0].get(
-            "message", {}
-        ).get("content", "{}")
-        parsed = json.loads(content_text)
+        parsed = json.loads(cleaned)
 
         return PlanExtractionResult(
             lr_number=parsed.get("lr_number", "L.R. UNKNOWN"),
@@ -174,7 +230,7 @@ class MetaModelClient:
             legs=[(str(b), str(d)) for b, d in parsed.get("legs", [])],
             raw_notes=parsed.get("notes", []),
             confidence=0.96,
-            source="muse-spark-1.3",
+            source=f"{self.model} (live)",
         )
 
     def _extract_fallback(
@@ -364,22 +420,9 @@ class MetaModelClient:
                     "2. Mathematical Findings (cite exact numbers)\n"
                     "3. Three Specific Questions to ask the Licensed Surveyor or Seller.\n"
                 )
-                headers = {
-                    "Authorization": f"Bearer {self.api_key}",
-                    "Content-Type": "application/json",
-                }
-                resp = self.client.post(
-                    f"{self.base_url}/responses",
-                    headers=headers,
-                    json={"model": DEFAULT_MODEL, "input": prompt},
-                )
-                if resp.status_code == 200:
-                    data = resp.json()
-                    out = data.get("output_text") or data.get("choices", [{}])[0].get(
-                        "message", {}
-                    ).get("content")
-                    if out:
-                        return out
+                out = self.call_chat_completion([{"role": "user", "content": prompt}])
+                if out:
+                    return out
             except Exception:
                 pass
 
