@@ -13,6 +13,9 @@ class TestPipelineScenarios:
         assert result["area"]["within_tolerance"] is True
         assert result["satellite"]["overlap_area_m2"] == 0.0
         assert "VERIFIED (GREEN)" in result["advisory_report"]
+        assert "land_advisory" in result
+        assert result["land_advisory"]["county"] != ""
+        assert result["land_advisory"]["valuation_kes_mid"] > 0
 
     def test_scenario_2_transposed_bearing_gives_amber_with_fix(self):
         result = run_survey_audit(preset_hint="scenario_2")

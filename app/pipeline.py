@@ -17,6 +17,7 @@ from app.geo.bearings import parse_bearing
 from app.geo.datum import transform_to_wgs84
 from app.geo.fixes import suggest_single_value_fixes
 from app.geo.traverse import Leg, bowditch_adjust, closure, compute_traverse
+from app.meta.advisor import evaluate_land_parcel
 from app.meta.client import MetaModelClient
 
 
@@ -165,6 +166,8 @@ def run_survey_audit(
         )
 
     # Step 10: Muse Spark 1.3 Advisory Synthesis
+    land_adv = evaluate_land_parcel(coords=wgs84_coords, meta_client=client)
+
     audit_payload = {
         "verdict": verdict,
         "verdict_reason": verdict_reason,
@@ -189,6 +192,27 @@ def run_survey_audit(
         "datum": {
             "crs_name": crs_name,
             "uncertainty_note": uncertainty_note,
+        },
+        "land_advisory": {
+            "county": land_adv.county,
+            "locality": land_adv.locality,
+            "typical_zoning": land_adv.typical_zoning,
+            "perimeter_m": land_adv.perimeter_m,
+            "area_m2": land_adv.area_m2,
+            "area_ha": land_adv.area_ha,
+            "area_acres": land_adv.area_acres,
+            "is_inside_kenya": land_adv.is_inside_kenya,
+            "is_safe_residential": land_adv.is_safe_residential,
+            "reserve_conflicts": land_adv.reserve_conflicts,
+            "valuation_kes_min": land_adv.valuation_kes_min,
+            "valuation_kes_mid": land_adv.valuation_kes_mid,
+            "valuation_kes_max": land_adv.valuation_kes_max,
+            "price_per_acre_kes": land_adv.price_per_acre_kes,
+            "price_per_m2_kes": land_adv.price_per_m2_kes,
+            "decision_verdict": land_adv.decision_verdict,
+            "decision_summary": land_adv.decision_summary,
+            "ai_advisory_text": land_adv.ai_advisory_text,
+            "due_diligence_steps": land_adv.due_diligence_steps,
         },
     }
 
