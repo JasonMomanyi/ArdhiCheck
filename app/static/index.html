@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ArdhiCheck – Kenyan Land Survey Plan & Land Advisor AI</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Leaflet CSS & JS for Inbuilt Kenya Interactive Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white !important; color: black !important; }
+    }
+    #kenyaMap { height: 480px; width: 100%; border-radius: 0.75rem; z-index: 10; }
+    .leaflet-container { font-family: inherit; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col font-sans antialiased">
+
+  <!-- Top Navigation Bar -->
+  <header class="bg-slate-900 text-white border-b border-slate-800 shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-lg bg-emerald-600 flex items-center justify-center font-bold text-white text-xl shadow-inner">
+          AC
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="font-extrabold text-xl tracking-tight text-white">Ardhi<span class="text-emerald-400">Check</span></span>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 font-mono">v0.2.0</span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">Kenyan Cadastral Plan Auditor & Meta AI Land Valuation Advisor</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        <!-- Hackathon Badge -->
+        <span class="hidden md:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-950 text-emerald-300 border border-emerald-800">
+          <span class="w-2 h-2 mr-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          Meta Hackathon 2026
+        </span>
+
+        <!-- Meta AI API Key & Connection Status Button -->
+        <button onclick="openApiKeyModal()" id="metaApiStatusBadge" class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition shadow-sm">
+          <i data-lucide="cpu" class="w-3.5 h-3.5 mr-1.5 text-emerald-400"></i>
+          <span id="apiStatusText">Meta Muse Spark 1.3</span>
+          <span id="apiLiveDot" class="w-2 h-2 ml-2 rounded-full bg-amber-400"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Navigation Tabs -->
+  <div class="bg-white border-b border-slate-200 sticky top-16 z-40 shadow-sm no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-4 sm:space-x-8">
+      <button onclick="switchTab('audit')" id="tabBtnAudit" class="py-3.5 px-2 border-b-2 font-bold text-sm flex items-center space-x-2 border-emerald-600 text-emerald-700">
+        <i data-lucide="file-check-2" class="w-4 h-4"></i>
+        <span>1. Survey Deed Plan Auditor</span>
+      </button>
+      <button onclick="switchTab('map')" id="tabBtnMap" class="py-3.5 px-2 border-b-2 font-semibold text-sm flex items-center space-x-2 border-transparent text-slate-500 hover:text-slate-800">
+        <i data-lucide="map-pin" class="w-4 h-4"></i>
+        <span>2. Kenya Interactive Map & Meta AI Land Advisor</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: SURVEY DEED PLAN AUDITOR            -->
+    <!-- ========================================== -->
+    <div id="tabContentAudit" class="space-y-8">
+
+      <!-- Hero Explainer Banner -->
+      <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 rounded-2xl p-6 sm:p-8 text-white shadow-xl border border-slate-800 relative overflow-hidden">
+        <div class="relative z-10 max-w-3xl space-y-3">
+          <div class="inline-flex items-center space-x-2 text-emerald-400 text-xs font-semibold uppercase tracking-wider">
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+            <span>Impartial AI Due Diligence for Kenyan Land Buyers</span>
+          </div>
+          <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight">
+            Photograph a survey plan. Get an audited boundary verdict in seconds.
+          </h1>
+          <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+            ArdhiCheck reads Kenyan deed plans with <strong>Meta Muse Spark 1.3</strong>, verifies traverse closure and area with pure mathematics, and checks satellite clips for encroachment on rivers and road reserves with <strong>Meta SAM 3.1</strong>.
+          </p>
+        </div>
+      </div>
+
+      <!-- 1-Click Demo Scenarios (Ready for Video Recording) -->
+      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold uppercase tracking-wider text-slate-600 flex items-center">
+            <i data-lucide="sparkles" class="w-4 h-4 mr-2 text-amber-500"></i>
+            Quick 1-Click Demo Scenarios (Ready for Video Recording)
+          </h2>
+          <span class="text-xs text-slate-500">Click any pre-verified Kenyan deed plan</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <!-- Preset 1 -->
+          <button onclick="loadScenario('scenario_1')" class="text-left p-3.5 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/40 transition group">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">PASS (GREEN)</span>
+              <span class="text-xs text-slate-600">0.50 Ha</span>
+            </div>
+            <div class="font-bold text-slate-900 text-sm mt-1.5 group-hover:text-emerald-700">Nairobi Upper Hill</div>
+            <div class="text-xs text-slate-600 mt-1 line-clamp-2">L.R. 209/14582. Traverses close to zero; area matches; zero reserve overlap.</div>
+          </button>
+
+          <!-- Preset 2 -->
+          <button onclick="loadScenario('scenario_2')" class="text-left p-3.5 rounded-lg border border-slate-200 hover:border-amber-500 hover:bg-amber-50/40 transition group">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded">AMBER BLUNDER</span>
+              <span class="text-xs text-slate-600">0.50 Ha</span>
+            </div>
+            <div class="font-bold text-slate-900 text-sm mt-1.5 group-hover:text-amber-700">Nakuru Municipality</div>
+            <div class="text-xs text-slate-600 mt-1 line-clamp-2">L.R. 8421/39. Clerical transposition in Leg 2 (009° vs 090°). Typo localized!</div>
+          </button>
+
+          <!-- Preset 3 -->
+          <button onclick="loadScenario('scenario_3')" class="text-left p-3.5 rounded-lg border border-slate-200 hover:border-rose-500 hover:bg-rose-50/40 transition group">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded">FAIL (RED)</span>
+              <span class="text-xs text-slate-600">Riparian</span>
+            </div>
+            <div class="font-bold text-slate-900 text-sm mt-1.5 group-hover:text-rose-700">Kiambu River Basin</div>
+            <div class="text-xs text-slate-600 mt-1 line-clamp-2">L.R. 11942/8. SAM 3.1 detects 240 m² overlap with 30m riparian river buffer.</div>
+          </button>
+
+          <!-- Preset 4 -->
+          <button onclick="loadScenario('scenario_4')" class="text-left p-3.5 rounded-lg border border-slate-200 hover:border-rose-500 hover:bg-rose-50/40 transition group">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded">FAIL (RED)</span>
+              <span class="text-xs text-slate-600">Area Deficit</span>
+            </div>
+            <div class="font-bold text-slate-900 text-sm mt-1.5 group-hover:text-rose-700">Eldoret Title Inflation</div>
+            <div class="text-xs text-slate-600 mt-1 line-clamp-2">L.R. 6140/11. Stated 1.20 Ha on paper, but geometry computes to only 0.50 Ha.</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Dual Upload Section -->
+      <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          <!-- Upload 1: Survey Deed Plan -->
+          <div class="space-y-3">
+            <label class="block text-sm font-bold text-slate-900 flex items-center">
+              <i data-lucide="file-text" class="w-4 h-4 mr-2 text-emerald-600"></i>
+              1. Survey Deed Plan / Mutation Form (Required)
+            </label>
+            <div id="planDropZone" class="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center hover:border-emerald-500 bg-slate-50/50 cursor-pointer transition flex flex-col items-center justify-center min-h-[170px] relative">
+              <input type="file" id="planFileInput" accept="image/*,.pdf" class="hidden">
+              <img id="planPreview" class="hidden max-h-36 rounded shadow object-contain mb-2" alt="Plan Preview">
+              <div id="planPlaceholder" class="space-y-1">
+                <i data-lucide="upload-cloud" class="w-8 h-8 text-slate-400 mx-auto"></i>
+                <div class="text-xs font-semibold text-slate-700">Click to upload Deed Plan photo or PDF</div>
+                <div class="text-[11px] text-slate-500">Supports whole-circle & quadrant DMS readings</div>
+              </div>
+              <div id="planFilenameBadge" class="hidden text-xs bg-slate-200 text-slate-800 px-2 py-1 rounded mt-1 font-mono"></div>
+            </div>
+          </div>
+
+          <!-- Upload 2: Satellite Clip -->
+          <div class="space-y-3">
+            <label class="block text-sm font-bold text-slate-900 flex items-center">
+              <i data-lucide="satellite" class="w-4 h-4 mr-2 text-blue-600"></i>
+              2. Google Earth / Map Satellite Clip (Optional)
+            </label>
+            <div id="satDropZone" class="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center hover:border-blue-500 bg-slate-50/50 cursor-pointer transition flex flex-col items-center justify-center min-h-[170px] relative">
+              <input type="file" id="satFileInput" accept="image/*" class="hidden">
+              <img id="satPreview" class="hidden max-h-36 rounded shadow object-contain mb-2" alt="Satellite Preview">
+              <div id="satPlaceholder" class="space-y-1">
+                <i data-lucide="layers" class="w-8 h-8 text-slate-400 mx-auto"></i>
+                <div class="text-xs font-semibold text-slate-700">Click to upload aerial / satellite image</div>
+                <div class="text-[11px] text-slate-500">Meta SAM 3.1 checks for river buffers & road reserves</div>
+              </div>
+              <div id="satFilenameBadge" class="hidden text-xs bg-slate-200 text-slate-800 px-2 py-1 rounded mt-1 font-mono"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Action Controls -->
+        <div class="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="flex items-center space-x-4 w-full sm:w-auto">
+            <button id="runAuditBtn" onclick="runAudit()" class="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-md hover:shadow-lg transition flex items-center justify-center space-x-2">
+              <i data-lucide="shield-check" class="w-5 h-5"></i>
+              <span>Run ArdhiCheck AI Audit</span>
+            </button>
+            <button onclick="openManualModal()" class="text-xs font-semibold text-slate-600 hover:text-slate-900 underline whitespace-nowrap">
+              Or Enter Readings Manually
+            </button>
+          </div>
+
+          <div class="flex items-center space-x-3 text-xs text-slate-600">
+            <span>Datum:</span>
+            <select id="crsSelect" class="bg-slate-50 border border-slate-300 rounded px-2 py-1 text-slate-800 font-mono text-xs">
+              <option value="arc1960_utm37s">Arc 1960 / UTM 37S (Central/Eastern Kenya)</option>
+              <option value="arc1960_utm36s">Arc 1960 / UTM 36S (Rift Valley/Western)</option>
+              <option value="arc1960_utm36n">Arc 1960 / UTM 36N (North West)</option>
+              <option value="arc1960_utm37n">Arc 1960 / UTM 37N (North East)</option>
+              <option value="arc1960_geo">Arc 1960 Geographic</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Spinner Loading State -->
+      <div id="loadingIndicator" class="hidden bg-white rounded-xl p-12 border border-slate-200 text-center space-y-4 shadow-sm">
+        <div class="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+        <div class="font-bold text-slate-800 text-lg">Running ArdhiCheck Verification Engine...</div>
+        <div class="text-xs text-slate-600 max-w-md mx-auto space-y-1">
+          <div>1. Meta Muse Spark 1.3 reading boundary readings...</div>
+          <div>2. Pure geometry engine computing closure & Shoelace area...</div>
+          <div>3. Meta SAM 3.1 segmenting satellite reserve buffers...</div>
+          <div>4. Meta AI Land Advisor estimating fair market valuation...</div>
+        </div>
+      </div>
+
+      <!-- AUDIT RESULTS SECTION -->
+      <div id="resultsSection" class="hidden space-y-6">
+
+        <!-- Traffic-Light Verdict Banner -->
+        <div id="verdictBanner" class="rounded-2xl p-6 sm:p-8 text-white shadow-lg border flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all duration-300">
+          <div class="space-y-2 max-w-3xl">
+            <div class="flex items-center space-x-3">
+              <span id="verdictBadge" class="text-xs font-black uppercase px-3 py-1 rounded-full tracking-wider bg-white/20"></span>
+              <span id="verdictLrNumber" class="text-sm font-mono opacity-90"></span>
+            </div>
+            <h2 id="verdictTitle" class="text-2xl sm:text-3xl font-black tracking-tight"></h2>
+            <p id="verdictDescription" class="text-sm sm:text-base opacity-95 leading-relaxed"></p>
+          </div>
+          <div class="flex flex-col items-center justify-center p-4 rounded-xl bg-black/20 backdrop-blur-sm min-w-[180px] text-center">
+            <div class="text-xs uppercase tracking-wider font-semibold opacity-75">Statutory Precision</div>
+            <div id="precisionValue" class="text-2xl font-black my-1 font-mono"></div>
+            <div id="precisionStatus" class="text-[11px] opacity-90"></div>
+          </div>
+        </div>
+
+        <!-- 4 Core Metrics Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Metric 1: Closure -->
+          <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm space-y-1">
+            <div class="text-xs text-slate-600 font-semibold uppercase tracking-wider">Boundary Misclosure</div>
+            <div id="metricMisclosure" class="text-xl font-bold text-slate-900 font-mono">0.000 m</div>
+            <div id="metricPerimeter" class="text-xs text-slate-600">Perimeter: 0.0 m</div>
+          </div>
+
+          <!-- Metric 2: Area -->
+          <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm space-y-1">
+            <div class="text-xs text-slate-600 font-semibold uppercase tracking-wider">Shoelace Area Check</div>
+            <div id="metricArea" class="text-xl font-bold text-slate-900 font-mono">0.50 Ha</div>
+            <div id="metricAreaDiff" class="text-xs text-emerald-600 font-semibold">0.00% stated vs computed</div>
+          </div>
+
+          <!-- Metric 3: Datum -->
+          <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm space-y-1">
+            <div class="text-xs text-slate-600 font-semibold uppercase tracking-wider">Datum Transformation</div>
+            <div id="metricDatum" class="text-sm font-bold text-slate-900 font-mono">Arc 1960 → WGS84</div>
+            <div id="metricCoords" class="text-xs text-slate-600 truncate">WGS84 Lon/Lat verified</div>
+          </div>
+
+          <!-- Metric 4: Reserve Overlap -->
+          <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm space-y-1">
+            <div class="text-xs text-slate-600 font-semibold uppercase tracking-wider">Protected Reserves</div>
+            <div id="metricReserve" class="text-xl font-bold text-emerald-600">0 m² Overlap</div>
+            <div id="metricReserveDesc" class="text-xs text-slate-600">Clear of riparian/road buffers</div>
+          </div>
+        </div>
+
+        <!-- Meta AI Valuation & Land Due Diligence Card -->
+        <div id="landAdvisorOverviewCard" class="bg-gradient-to-br from-slate-900 to-emerald-950 rounded-2xl p-6 text-white shadow-md border border-slate-800 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+            <div class="flex items-center space-x-3">
+              <div class="w-9 h-9 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+                <i data-lucide="badge-dollar-sign" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-base text-white">Meta AI Property Valuation & Zoning Dossier</h3>
+                <p id="advisorLocationText" class="text-xs text-emerald-300">Nairobi County • Upper Hill Sub-market</p>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span id="advisorVerdictBadge" class="text-xs font-black uppercase px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">CLEAR BUY</span>
+              <button onclick="switchTab('map')" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition flex items-center space-x-1">
+                <span>View on Kenya Map</span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-1"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+            <div class="bg-black/30 p-3 rounded-xl border border-slate-800 space-y-1">
+              <div class="text-slate-400 font-medium">Estimated Fair Market Valuation</div>
+              <div id="advisorValuationMid" class="text-lg font-black text-emerald-400 font-mono">KES 225,000,000</div>
+              <div id="advisorValuationRange" class="text-[11px] text-slate-400">Range: KES 175M - 275M</div>
+            </div>
+            <div class="bg-black/30 p-3 rounded-xl border border-slate-800 space-y-1">
+              <div class="text-slate-400 font-medium">Sub-market Rate & Zoning</div>
+              <div id="advisorRatePerAcre" class="text-lg font-black text-white font-mono">KES 450M / Acre</div>
+              <div id="advisorZoning" class="text-[11px] text-slate-400">Commercial / High-Density Mixed</div>
+            </div>
+            <div class="bg-black/30 p-3 rounded-xl border border-slate-800 space-y-1">
+              <div class="text-slate-400 font-medium">Public Reserve Conflict Check</div>
+              <div id="advisorReserveStatus" class="text-lg font-black text-emerald-400">100% Clean Site</div>
+              <div id="advisorReserveNote" class="text-[11px] text-slate-400">Clear of Karura/Park/River corridors</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Visual Inspection Section (CAD Canvas + Satellite View) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Left: Cadastral Boundary (HTML5 Canvas CAD) -->
+          <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center">
+                <i data-lucide="compass" class="w-4 h-4 mr-2 text-emerald-600"></i>
+                Cadastral Boundary Plot (Pure Geometry)
+              </h3>
+              <span class="text-xs text-slate-500 font-mono">Grid North ↑</span>
+            </div>
+            <div class="border border-slate-100 rounded-lg bg-slate-900 p-2 flex items-center justify-center overflow-hidden">
+              <canvas id="cadCanvas" width="560" height="380" class="max-w-full h-auto rounded"></canvas>
+            </div>
+            <div class="text-xs text-slate-600 flex items-center justify-between">
+              <span>Blue: Computed traverse legs</span>
+              <span>Red Dots: Boundary Beacons</span>
+            </div>
+          </div>
+
+          <!-- Right: Satellite Reserve Inspection (SAM 3.1 Overlay) -->
+          <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center">
+                <i data-lucide="layers" class="w-4 h-4 mr-2 text-blue-600"></i>
+                Satellite & Reserve Overlay (Meta SAM 3.1)
+              </h3>
+              <span id="satSourceBadge" class="text-xs px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-mono">SAM 3.1</span>
+            </div>
+            <div class="border border-slate-100 rounded-lg bg-slate-900 p-2 flex items-center justify-center overflow-hidden relative">
+              <img id="resultsSatImg" class="max-h-[380px] w-full object-cover rounded shadow" src="" alt="Satellite View">
+            </div>
+            <div id="satNotesList" class="text-xs text-slate-600 space-y-0.5"></div>
+          </div>
+
+        </div>
+
+        <!-- Blunder Localisation Table (Shown when misclosure exists) -->
+        <div id="blunderSection" class="hidden bg-amber-50/60 rounded-xl p-6 border border-amber-200 shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-600"></i>
+              <h3 class="font-bold text-amber-900 text-base">ArdhiCheck Error Localiser: Candidate Clerical Fixes</h3>
+            </div>
+            <span class="text-xs text-amber-700 font-semibold">Ranked by Smallest Edit Distance</span>
+          </div>
+          <p class="text-xs text-amber-800 leading-relaxed">
+            The traverse failed mathematical closure. The algorithm tested single-digit substitutions and adjacent-digit transpositions against printed values to diagnose potential surveyor typos.
+          </p>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs bg-white rounded-lg border border-amber-200 overflow-hidden">
+              <thead class="bg-amber-100/70 text-amber-900 font-bold uppercase">
+                <tr>
+                  <th class="p-3">Rank</th>
+                  <th class="p-3">Leg</th>
+                  <th class="p-3">Field</th>
+                  <th class="p-3">Printed on Plan</th>
+                  <th class="p-3">Proposed Correction</th>
+                  <th class="p-3">Residual Misclosure</th>
+                  <th class="p-3">Character Edits</th>
+                </tr>
+              </thead>
+              <tbody id="fixesTableBody" class="divide-y divide-amber-100 font-mono"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Schedule of Traverse Readings Table -->
+        <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm space-y-4">
+          <h3 class="font-bold text-slate-900 text-sm uppercase tracking-wider flex items-center">
+            <i data-lucide="list-ordered" class="w-4 h-4 mr-2 text-slate-600"></i>
+            Schedule of Extracted Boundary Readings
+          </h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs rounded-lg border border-slate-200 overflow-hidden">
+              <thead class="bg-slate-100 text-slate-800 font-bold uppercase">
+                <tr>
+                  <th class="p-3">Leg</th>
+                  <th class="p-3">Bearing (DMS)</th>
+                  <th class="p-3">Azimuth (Decimal)</th>
+                  <th class="p-3">Distance (m)</th>
+                </tr>
+              </thead>
+              <tbody id="legsTableBody" class="divide-y divide-slate-100 font-mono"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Meta Muse Spark 1.3 Executive Synthesis Report -->
+        <div class="bg-white rounded-xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div class="flex items-center space-x-2">
+              <i data-lucide="file-check-2" class="w-5 h-5 text-emerald-600"></i>
+              <h3 class="font-bold text-slate-900 text-lg">Executive Advisory Report</h3>
+            </div>
+            <button onclick="window.print()" class="no-print inline-flex items-center px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-sm">
+              <i data-lucide="printer" class="w-3.5 h-3.5 mr-1.5"></i>
+              Print / Save PDF
+            </button>
+          </div>
+
+          <div id="advisoryReportContent" class="prose prose-slate max-w-none text-sm text-slate-700 leading-relaxed space-y-3"></div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: INBUILT KENYA MAP & LAND ADVISOR    -->
+    <!-- ========================================== -->
+    <div id="tabContentMap" class="hidden space-y-6">
+
+      <!-- Map Header & Explainer -->
+      <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-xl font-extrabold text-slate-900 flex items-center">
+              <i data-lucide="map" class="w-5 h-5 mr-2 text-emerald-600"></i>
+              Inbuilt Kenya Land Map & Digital Reserve Screen
+            </h2>
+            <p class="text-xs text-slate-600 mt-1">
+              Click anywhere inside Kenya to place boundary beacons, draw a parcel perimeter, and query <strong>Meta AI</strong> for instant reserve screening and valuation!
+            </p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="clearMapDrawnPoints()" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 flex items-center space-x-1">
+              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+              <span>Clear Points</span>
+            </button>
+            <button onclick="analyzeMapParcel()" id="analyzeMapBtn" class="px-4 py-2 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow flex items-center space-x-1.5">
+              <i data-lucide="sparkles" class="w-4 h-4"></i>
+              <span>Ask Meta AI Land Advisor</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Map Stats / Perimeter Counter -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-slate-100 text-xs">
+          <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+            <span class="text-slate-500 font-medium">Placed Beacons:</span>
+            <span id="mapPointCount" class="font-bold text-slate-900 ml-1">0 Points</span>
+          </div>
+          <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+            <span class="text-slate-500 font-medium">Perimeter:</span>
+            <span id="mapPerimeterText" class="font-bold text-slate-900 ml-1 font-mono">0.0 m</span>
+          </div>
+          <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+            <span class="text-slate-500 font-medium">Measured Area:</span>
+            <span id="mapAreaText" class="font-bold text-slate-900 ml-1 font-mono">0.00 Acres</span>
+          </div>
+          <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+            <span class="text-slate-500 font-medium">Asking Price (KES):</span>
+            <input type="number" id="mapAskingPriceInput" placeholder="Optional" class="w-24 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-xs text-slate-900 font-mono ml-1">
+          </div>
+        </div>
+      </div>
+
+      <!-- Leaflet Map Container -->
+      <div class="bg-white rounded-xl p-3 border border-slate-200 shadow-sm relative">
+        <div id="kenyaMap"></div>
+        <div class="mt-2 flex flex-wrap items-center justify-between text-[11px] text-slate-500 px-2 gap-2">
+          <div class="flex items-center space-x-4">
+            <span class="flex items-center"><span class="w-3 h-3 rounded bg-emerald-600 inline-block mr-1"></span> Audited Survey Parcel</span>
+            <span class="flex items-center"><span class="w-3 h-3 rounded bg-green-700 opacity-60 inline-block mr-1"></span> Gazetted Forest (Karura/Ngong)</span>
+            <span class="flex items-center"><span class="w-3 h-3 rounded bg-amber-600 opacity-60 inline-block mr-1"></span> Nairobi National Park</span>
+            <span class="flex items-center"><span class="w-3 h-1 bg-cyan-500 inline-block mr-1"></span> Nairobi River 30m Buffer</span>
+          </div>
+          <span>Boundary locked to Kenya territory</span>
+        </div>
+      </div>
+
+      <!-- Meta AI Map Land Advisory Results -->
+      <div id="mapAdvisorResultCard" class="hidden bg-white rounded-xl p-6 border border-slate-200 shadow-sm space-y-6">
+        <!-- Verdict Banner -->
+        <div id="mapVerdictBanner" class="rounded-xl p-5 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="space-y-1">
+            <div class="flex items-center space-x-2">
+              <span id="mapVerdictBadge" class="text-xs font-black uppercase px-2.5 py-0.5 rounded-full bg-white/20"></span>
+              <span id="mapLocationBadge" class="text-xs font-semibold opacity-90"></span>
+            </div>
+            <h3 id="mapVerdictTitle" class="text-xl font-extrabold"></h3>
+            <p id="mapVerdictDesc" class="text-xs opacity-95 max-w-2xl"></p>
+          </div>
+          <div class="bg-black/20 p-3 rounded-lg text-center min-w-[160px]">
+            <div class="text-[10px] uppercase font-bold opacity-75">Estimated Valuation</div>
+            <div id="mapValuationValue" class="text-xl font-black font-mono my-0.5">KES 0</div>
+            <div id="mapValuationRate" class="text-[10px] opacity-90 font-mono">KES 0 / Acre</div>
+          </div>
+        </div>
+
+        <!-- 3-Column Dossier -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Col 1: Reserve Screening -->
+          <div class="border border-slate-200 rounded-xl p-4 space-y-2">
+            <div class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center">
+              <i data-lucide="shield-alert" class="w-4 h-4 mr-1.5 text-emerald-600"></i>
+              Reserve Screening
+            </div>
+            <div id="mapReserveCheckResult" class="text-xs text-slate-700 space-y-1"></div>
+          </div>
+
+          <!-- Col 2: Zoning & Physical Specs -->
+          <div class="border border-slate-200 rounded-xl p-4 space-y-2">
+            <div class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center">
+              <i data-lucide="compass" class="w-4 h-4 mr-1.5 text-blue-600"></i>
+              Parcel Specifications
+            </div>
+            <div id="mapSpecsResult" class="text-xs text-slate-700 space-y-1 font-mono"></div>
+          </div>
+
+          <!-- Col 3: Action Checklist -->
+          <div class="border border-slate-200 rounded-xl p-4 space-y-2">
+            <div class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center">
+              <i data-lucide="check-square" class="w-4 h-4 mr-1.5 text-amber-600"></i>
+              Required Due Diligence
+            </div>
+            <div id="mapDueDiligenceList" class="text-[11px] text-slate-600 space-y-1"></div>
+          </div>
+        </div>
+
+        <!-- Muse Spark 1.3 Advisory Narrative -->
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-2">
+          <div class="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center">
+            <i data-lucide="bot" class="w-4 h-4 mr-1.5 text-emerald-600"></i>
+            Meta Muse Spark 1.3 Executive Investor Brief
+          </div>
+          <div id="mapAdvisorText" class="prose prose-slate text-xs text-slate-700 leading-relaxed"></div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-slate-900 text-slate-400 border-t border-slate-800 py-6 text-xs text-center space-y-2 mt-auto no-print">
+    <div class="max-w-7xl mx-auto px-4">
+      <p>ArdhiCheck – Built during the <strong>Meta Global AI Developer Hackathon</strong> (Oct 26 – Nov 4, 2026).</p>
+      <p class="text-slate-600">Disclaimer: Not legal advice. Not affiliated with the Ministry of Lands or Ardhisasa. Pure geometric verification engine.</p>
+    </div>
+  </footer>
+
+  <!-- ========================================== -->
+  <!-- MODALS                                     -->
+  <!-- ========================================== -->
+
+  <!-- Modal 1: Meta AI API Key & Connection Tester -->
+  <div id="apiKeyModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-5 animate-in fade-in duration-200">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center space-x-2">
+          <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+            <i data-lucide="key" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-900 text-base">Meta Model API (dev.meta.ai)</h3>
+            <p class="text-xs text-slate-500">Configure your Meta AI credits for live Muse Spark 1.3</p>
+          </div>
+        </div>
+        <button onclick="closeApiKeyModal()" class="text-slate-400 hover:text-slate-700">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-800 mb-1">Meta Model API Key (MODEL_API_KEY)</label>
+          <input type="password" id="modalApiKeyInput" placeholder="Paste your dev.meta.ai key here..." class="w-full border border-slate-300 rounded-lg p-2.5 font-mono text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+          <p class="text-[11px] text-slate-500 mt-1">
+            Endpoint: <code class="bg-slate-100 px-1 rounded">https://api.meta.ai/v1</code> • Supports Meta credits.
+          </p>
+        </div>
+
+        <div id="apiTestResultBox" class="hidden p-3 rounded-lg border text-xs"></div>
+      </div>
+
+      <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+        <button onclick="testMetaConnection()" id="testMetaBtn" class="px-4 py-2 text-xs font-semibold rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 flex items-center space-x-1.5">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+          <span>Test Live Connection</span>
+        </button>
+        <div class="flex items-center space-x-2">
+          <button onclick="closeApiKeyModal()" class="px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:bg-slate-100">Cancel</button>
+          <button onclick="saveApiKey()" class="px-4 py-2 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow">Save Key</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Manual Traverse Readings Entry -->
+  <div id="manualModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-bold text-slate-900 text-base flex items-center">
+          <i data-lucide="edit-3" class="w-4 h-4 mr-2 text-emerald-600"></i>
+          Manual Survey Traverse Input
+        </h3>
+        <button onclick="closeManualModal()" class="text-slate-400 hover:text-slate-700">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">L.R. Number</label>
+          <input type="text" id="manualLrNumber" value="L.R. 209/14582" class="w-full border border-slate-300 rounded p-2 text-xs font-mono">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Stated Area (Ha)</label>
+          <input type="number" step="0.01" id="manualStatedArea" value="0.50" class="w-full border border-slate-300 rounded p-2 text-xs font-mono">
+        </div>
+      </div>
+
+      <div class="space-y-2 text-xs">
+        <div class="flex items-center justify-between">
+          <label class="font-semibold text-slate-700">Boundary Traverse Readings (Bearing DMS, Distance m)</label>
+          <button onclick="addManualLegRow()" class="text-emerald-600 hover:text-emerald-700 font-bold">+ Add Leg</button>
+        </div>
+        <div id="manualLegsContainer" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+          <!-- Rows dynamically added -->
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+        <button onclick="prefillSampleLegs()" class="text-xs text-slate-500 hover:text-slate-800 underline">
+          Load Sample Nairobi Deed Plan
+        </button>
+        <button onclick="submitManualTraverse()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs shadow">
+          Audit Readings
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Logic Scripts -->
+  <script>
+    let currentScenarioId = 'scenario_1';
+    let uploadedPlanB64 = null;
+    let uploadedSatB64 = null;
+    let activeTab = 'audit';
+    let kenyaMapInstance = null;
+    let drawnPoints = [];
+    let mapMarkers = [];
+    let mapPolygon = null;
+    let auditedParcelLayer = null;
+
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // Check API Health on startup
+    fetch('/api/health')
+      .then(r => r.json())
+      .then(d => {
+        const text = d.live_meta_api ? 'Meta Model API (Live)' : 'Meta Muse Spark 1.3 (Demo Mode)';
+        document.getElementById('apiStatusText').innerText = text;
+        const dot = document.getElementById('apiLiveDot');
+        if (d.live_meta_api) {
+          dot.className = 'w-2 h-2 ml-2 rounded-full bg-emerald-400 animate-pulse';
+        } else {
+          dot.className = 'w-2 h-2 ml-2 rounded-full bg-amber-400';
+        }
+      })
+      .catch(() => {});
+
+    // Tab Switching Logic
+    function switchTab(tab) {
+      activeTab = tab;
+      const auditBtn = document.getElementById('tabBtnAudit');
+      const mapBtn = document.getElementById('tabBtnMap');
+      const auditContent = document.getElementById('tabContentAudit');
+      const mapContent = document.getElementById('tabContentMap');
+
+      if (tab === 'audit') {
+        auditBtn.className = 'py-3.5 px-2 border-b-2 font-bold text-sm flex items-center space-x-2 border-emerald-600 text-emerald-700';
+        mapBtn.className = 'py-3.5 px-2 border-b-2 font-semibold text-sm flex items-center space-x-2 border-transparent text-slate-500 hover:text-slate-800';
+        auditContent.classList.remove('hidden');
+        mapContent.classList.add('hidden');
+      } else {
+        mapBtn.className = 'py-3.5 px-2 border-b-2 font-bold text-sm flex items-center space-x-2 border-emerald-600 text-emerald-700';
+        auditBtn.className = 'py-3.5 px-2 border-b-2 font-semibold text-sm flex items-center space-x-2 border-transparent text-slate-500 hover:text-slate-800';
+        mapContent.classList.remove('hidden');
+        auditContent.classList.add('hidden');
+        initKenyaMap();
+      }
+      lucide.createIcons();
+    }
+
+    // Initialize Kenya Interactive Map with Leaflet
+    function initKenyaMap() {
+      if (kenyaMapInstance) {
+        setTimeout(() => kenyaMapInstance.invalidateSize(), 150);
+        return;
+      }
+
+      // Kenya Bounds: lat -4.75 to 5.55, lon 33.85 to 41.95
+      const kenyaBounds = L.latLngBounds([[-4.75, 33.85], [5.55, 41.95]]);
+      kenyaMapInstance = L.map('kenyaMap', {
+        center: [-1.286389, 36.817223], // Nairobi
+        zoom: 7,
+        maxBounds: kenyaBounds,
+        maxBoundsViscosity: 1.0,
+        minZoom: 6,
+        maxZoom: 18,
+      });
+
+      // Base Tile Layers
+      const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(kenyaMapInstance);
+
+      const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri'
+      });
+
+      L.control.layers({ 'OpenStreetMap': osm, 'Satellite (Esri)': satellite }).addTo(kenyaMapInstance);
+
+      // Gazetted Reserves Overlays
+      // 1. Karura Forest
+      L.polygon([
+        [-1.228, 36.815], [-1.228, 36.855], [-1.260, 36.855], [-1.260, 36.815]
+      ], {
+        color: '#15803d', fillColor: '#16a34a', fillOpacity: 0.35, weight: 2
+      }).bindTooltip('Karura Forest Reserve (Gazetted Public Forest)', { sticky: true }).addTo(kenyaMapInstance);
+
+      // 2. Ngong Road Forest
+      L.polygon([
+        [-1.305, 36.720], [-1.305, 36.765], [-1.335, 36.765], [-1.335, 36.720]
+      ], {
+        color: '#15803d', fillColor: '#16a34a', fillOpacity: 0.35, weight: 2
+      }).bindTooltip('Ngong Road Forest Reserve', { sticky: true }).addTo(kenyaMapInstance);
+
+      // 3. Nairobi National Park
+      L.polygon([
+        [-1.320, 36.780], [-1.320, 36.980], [-1.450, 36.980], [-1.450, 36.780]
+      ], {
+        color: '#d97706', fillColor: '#f59e0b', fillOpacity: 0.3, weight: 2
+      }).bindTooltip('Nairobi National Park (KWS Wildlife Sanctuary)', { sticky: true }).addTo(kenyaMapInstance);
+
+      // 4. Nairobi River Corridor
+      L.polyline([
+        [-1.285, 36.800], [-1.278, 36.840], [-1.272, 36.890], [-1.268, 36.935]
+      ], {
+        color: '#06b6d4', weight: 6, opacity: 0.7
+      }).bindTooltip('Nairobi River 30m Statutory Riparian Corridor', { sticky: true }).addTo(kenyaMapInstance);
+
+      // Map Click Event: Place Beacons
+      kenyaMapInstance.on('click', function(e) {
+        const lat = e.latlng.lat;
+        const lon = e.latlng.lng;
+        addMapPoint(lon, lat);
+      });
+    }
+
+    function addMapPoint(lon, lat) {
+      drawnPoints.push([lon, lat]);
+      const idx = drawnPoints.length;
+
+      // Add marker
+      const marker = L.circleMarker([lat, lon], {
+        radius: 6,
+        color: '#dc2626',
+        fillColor: '#ef4444',
+        fillOpacity: 0.9,
+        weight: 2
+      }).bindPopup(`<b>Beacon BP${idx}</b><br>Lon: ${lon.toFixed(5)}<br>Lat: ${lat.toFixed(5)}`);
+
+      marker.addTo(kenyaMapInstance);
+      mapMarkers.push(marker);
+
+      // Redraw polygon / perimeter
+      updateMapDrawnPolygon();
+    }
+
+    function updateMapDrawnPolygon() {
+      if (mapPolygon) {
+        kenyaMapInstance.removeLayer(mapPolygon);
+        mapPolygon = null;
+      }
+
+      document.getElementById('mapPointCount').innerText = `${drawnPoints.length} Points`;
+
+      if (drawnPoints.length >= 2) {
+        const latlngs = drawnPoints.map(p => [p[1], p[0]]);
+        mapPolygon = L.polygon(latlngs, {
+          color: '#059669',
+          fillColor: '#10b981',
+          fillOpacity: 0.25,
+          weight: 3
+        }).addTo(kenyaMapInstance);
+
+        // Approximate perimeter
+        let perim = 0;
+        for (let i = 0; i < drawnPoints.length; i++) {
+          const p1 = L.latLng(drawnPoints[i][1], drawnPoints[i][0]);
+          const p2 = L.latLng(drawnPoints[(i+1)%drawnPoints.length][1], drawnPoints[(i+1)%drawnPoints.length][0]);
+          perim += p1.distanceTo(p2);
+        }
+        document.getElementById('mapPerimeterText').innerText = `${perim.toFixed(1)} m`;
+
+        if (drawnPoints.length >= 3) {
+          // Approximate Shoelace area
+          const avgLat = drawnPoints.reduce((acc, p) => acc + p[1], 0) / drawnPoints.length;
+          const mPerDegLat = 111132.9;
+          const mPerDegLon = 111412.8 * Math.cos(avgLat * Math.PI / 180);
+          let a = 0;
+          for (let i = 0; i < drawnPoints.length; i++) {
+            const j = (i + 1) % drawnPoints.length;
+            const x1 = drawnPoints[i][0] * mPerDegLon, y1 = drawnPoints[i][1] * mPerDegLat;
+            const x2 = drawnPoints[j][0] * mPerDegLon, y2 = drawnPoints[j][1] * mPerDegLat;
+            a += x1 * y2 - x2 * y1;
+          }
+          const m2 = Math.abs(a) / 2.0;
+          const acres = m2 / 4046.856;
+          document.getElementById('mapAreaText').innerText = `${acres.toFixed(2)} Acres (${(m2/10000).toFixed(2)} Ha)`;
+        }
+      }
+    }
+
+    function clearMapDrawnPoints() {
+      drawnPoints = [];
+      mapMarkers.forEach(m => kenyaMapInstance.removeLayer(m));
+      mapMarkers = [];
+      if (mapPolygon) {
+        kenyaMapInstance.removeLayer(mapPolygon);
+        mapPolygon = null;
+      }
+      document.getElementById('mapPointCount').innerText = '0 Points';
+      document.getElementById('mapPerimeterText').innerText = '0.0 m';
+      document.getElementById('mapAreaText').innerText = '0.00 Acres';
+      document.getElementById('mapAdvisorResultCard').classList.add('hidden');
+    }
+
+    function analyzeMapParcel() {
+      if (drawnPoints.length < 3) {
+        alert('Please click at least 3 points on the Kenya map to outline your parcel perimeter.');
+        return;
+      }
+
+      const btn = document.getElementById('analyzeMapBtn');
+      btn.innerText = 'Analyzing with Meta AI...';
+
+      const askingPrice = document.getElementById('mapAskingPriceInput').value;
+
+      fetch('/api/advisor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          coords: drawnPoints,
+          asking_price_kes: askingPrice ? parseFloat(askingPrice) : null,
+        })
+      })
+      .then(r => r.json())
+      .then(d => {
+        btn.innerHTML = '<i data-lucide="sparkles" class="w-4 h-4 mr-1"></i><span>Ask Meta AI Land Advisor</span>';
+        renderMapAdvisorResults(d);
+        lucide.createIcons();
+      })
+      .catch(err => {
+        btn.innerHTML = '<i data-lucide="sparkles" class="w-4 h-4 mr-1"></i><span>Ask Meta AI Land Advisor</span>';
+        alert('Advisor error: ' + err);
+      });
+    }
+
+    function renderMapAdvisorResults(d) {
+      const card = document.getElementById('mapAdvisorResultCard');
+      const banner = document.getElementById('mapVerdictBanner');
+      const badge = document.getElementById('mapVerdictBadge');
+      const title = document.getElementById('mapVerdictTitle');
+      const desc = document.getElementById('mapVerdictDesc');
+
+      if (d.decision_verdict === 'CLEAR_BUY') {
+        banner.className = 'rounded-xl p-5 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-emerald-800 to-teal-900 border border-emerald-600';
+        badge.innerText = 'CLEAR BUY • VIABLE';
+        badge.className = 'text-xs font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/30 text-emerald-200 border border-emerald-400';
+        title.innerText = 'Sound Property Investment (Verified Clean)';
+      } else if (d.decision_verdict === 'CAUTION') {
+        banner.className = 'rounded-xl p-5 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-amber-800 to-yellow-900 border border-amber-500';
+        badge.innerText = 'CAUTION • PRICING RISK';
+        badge.className = 'text-xs font-black uppercase px-2.5 py-0.5 rounded-full bg-amber-500/30 text-amber-200 border border-amber-400';
+        title.innerText = 'Proceed with Caution (Pricing Anomaly)';
+      } else {
+        banner.className = 'rounded-xl p-5 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-rose-900 to-red-950 border border-rose-600';
+        badge.innerText = 'DO NOT BUY • CRITICAL';
+        badge.className = 'text-xs font-black uppercase px-2.5 py-0.5 rounded-full bg-rose-500/30 text-rose-200 border border-rose-400';
+        title.innerText = 'Encroachment / Invalid Title Risk';
+      }
+
+      document.getElementById('mapLocationBadge').innerText = `${d.locality}, ${d.county} County`;
+      desc.innerText = d.decision_summary;
+
+      document.getElementById('mapValuationValue').innerText = `KES ${(d.valuation_kes_mid).toLocaleString('en-US', {maximumFractionDigits: 0})}`;
+      document.getElementById('mapValuationRate').innerText = `KES ${(d.price_per_acre_kes).toLocaleString('en-US', {maximumFractionDigits: 0})} / Acre`;
+
+      // Col 1: Reserve Screening
+      const resContainer = document.getElementById('mapReserveCheckResult');
+      resContainer.innerHTML = '';
+      if (d.reserve_conflicts && d.reserve_conflicts.length > 0) {
+        d.reserve_conflicts.forEach(c => {
+          const div = document.createElement('div');
+          div.className = 'p-2 bg-rose-50 border border-rose-200 rounded text-rose-800';
+          div.innerHTML = `<strong>⚠️ Encroachment: ${c.name}</strong><br><span class="text-[10px]">${c.details}</span>`;
+          resContainer.appendChild(div);
+        });
+      } else {
+        resContainer.innerHTML = '<div class="p-2 bg-emerald-50 border border-emerald-200 rounded text-emerald-800">✅ <strong>100% Clean Site</strong><br><span class="text-[10px]">Zero conflict with Karura/Ngong forests, National Parks, or 30m riparian corridors.</span></div>';
+      }
+
+      // Col 2: Specs
+      document.getElementById('mapSpecsResult').innerHTML = `
+        <div>• Area: <strong>${d.area_acres.toFixed(2)} Acres</strong> (${(d.area_ha).toFixed(2)} Ha)</div>
+        <div>• Perimeter: <strong>${d.perimeter_m.toFixed(1)} m</strong></div>
+        <div>• Zoning: <strong>${d.typical_zoning}</strong></div>
+        <div>• Centroid: ${d.centroid[1].toFixed(4)}°N, ${d.centroid[0].toFixed(4)}°E</div>
+      `;
+
+      // Col 3: Due diligence
+      const ddContainer = document.getElementById('mapDueDiligenceList');
+      ddContainer.innerHTML = '';
+      (d.due_diligence_steps || []).forEach(step => {
+        const item = document.createElement('div');
+        item.innerText = step;
+        ddContainer.appendChild(item);
+      });
+
+      // Narrative
+      let textHtml = d.ai_advisory_text
+        .replace(/### (.*)/g, '<h4 class="font-bold text-sm text-slate-900 mt-2">$1</h4>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n\n/g, '<p class="my-1.5"></p>');
+      document.getElementById('mapAdvisorText').innerHTML = textHtml;
+
+      card.classList.remove('hidden');
+    }
+
+    // File Upload Handlers
+    const planDrop = document.getElementById('planDropZone');
+    const planInput = document.getElementById('planFileInput');
+    planDrop.addEventListener('click', () => planInput.click());
+    planInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        currentScenarioId = null;
+        document.getElementById('planFilenameBadge').innerText = file.name;
+        document.getElementById('planFilenameBadge').classList.remove('hidden');
+        document.getElementById('planPlaceholder').classList.add('hidden');
+        const reader = new FileReader();
+        reader.onload = (re) => {
+          uploadedPlanB64 = re.target.result;
+          document.getElementById('planPreview').src = uploadedPlanB64;
+          document.getElementById('planPreview').classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    const satDrop = document.getElementById('satDropZone');
+    const satInput = document.getElementById('satFileInput');
+    satDrop.addEventListener('click', () => satInput.click());
+    satInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        document.getElementById('satFilenameBadge').innerText = file.name;
+        document.getElementById('satFilenameBadge').classList.remove('hidden');
+        document.getElementById('satPlaceholder').classList.add('hidden');
+        const reader = new FileReader();
+        reader.onload = (re) => {
+          uploadedSatB64 = re.target.result;
+          document.getElementById('satPreview').src = uploadedSatB64;
+          document.getElementById('satPreview').classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // 1-Click Scenario Loader
+    function loadScenario(scenarioId) {
+      currentScenarioId = scenarioId;
+      uploadedPlanB64 = null;
+      uploadedSatB64 = null;
+
+      document.getElementById('planPreview').src = `/data/examples/${scenarioId}_plan.png`;
+      document.getElementById('planPreview').classList.remove('hidden');
+      document.getElementById('planPlaceholder').classList.add('hidden');
+      document.getElementById('planFilenameBadge').innerText = `${scenarioId}_deed_plan.png`;
+      document.getElementById('planFilenameBadge').classList.remove('hidden');
+
+      document.getElementById('satPreview').src = `/data/examples/${scenarioId}_satellite.png`;
+      document.getElementById('satPreview').classList.remove('hidden');
+      document.getElementById('satPlaceholder').classList.add('hidden');
+      document.getElementById('satFilenameBadge').innerText = `${scenarioId}_google_earth.png`;
+      document.getElementById('satFilenameBadge').classList.remove('hidden');
+
+      runAudit();
+    }
+
+    // Run Full Audit
+    function runAudit() {
+      document.getElementById('loadingIndicator').classList.remove('hidden');
+      document.getElementById('resultsSection').classList.add('hidden');
+
+      const payload = {
+        preset_hint: currentScenarioId,
+        plan_image_b64: uploadedPlanB64,
+        satellite_image_b64: uploadedSatB64,
+        crs_name: document.getElementById('crsSelect').value,
+      };
+
+      fetch('/api/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('loadingIndicator').classList.add('hidden');
+        if (data.error) {
+          alert(`Audit Error: ${data.error}`);
+          return;
+        }
+        renderResults(data);
+      })
+      .catch(err => {
+        document.getElementById('loadingIndicator').classList.add('hidden');
+        alert(`Request failed: ${err}`);
+      });
+    }
+
+    // Render Full Results Dashboard
+    function renderResults(data) {
+      const banner = document.getElementById('verdictBanner');
+      const badge = document.getElementById('verdictBadge');
+      const title = document.getElementById('verdictTitle');
+      const desc = document.getElementById('verdictDescription');
+
+      if (data.verdict === 'GREEN') {
+        banner.className = 'rounded-2xl p-6 sm:p-8 text-white shadow-lg border flex flex-col md:flex-row md:items-center justify-between gap-6 bg-gradient-to-r from-emerald-800 to-teal-900 border-emerald-600';
+        badge.innerText = 'VERIFIED • STATUTORY PASS';
+        badge.className = 'text-xs font-black uppercase px-3 py-1 rounded-full tracking-wider bg-emerald-500/30 text-emerald-200 border border-emerald-400';
+        title.innerText = 'Boundary & Legal Area Fully Consistent';
+      } else if (data.verdict === 'AMBER') {
+        banner.className = 'rounded-2xl p-6 sm:p-8 text-white shadow-lg border flex flex-col md:flex-row md:items-center justify-between gap-6 bg-gradient-to-r from-amber-800 to-yellow-900 border-amber-500';
+        badge.innerText = 'CAUTION • SUSPECT CLERICAL BLUNDER';
+        badge.className = 'text-xs font-black uppercase px-3 py-1 rounded-full tracking-wider bg-amber-500/30 text-amber-200 border border-amber-400';
+        title.innerText = 'Traverse Misclosed: Potential Typo Diagnosed';
+      } else {
+        banner.className = 'rounded-2xl p-6 sm:p-8 text-white shadow-lg border flex flex-col md:flex-row md:items-center justify-between gap-6 bg-gradient-to-r from-rose-900 to-red-950 border-rose-600';
+        badge.innerText = 'CRITICAL RISK • AUDIT FAILED';
+        badge.className = 'text-xs font-black uppercase px-3 py-1 rounded-full tracking-wider bg-rose-500/30 text-rose-200 border border-rose-400';
+        title.innerText = 'Document Inconsistency or Environmental Overlap';
+      }
+
+      document.getElementById('verdictLrNumber').innerText = data.lr_number;
+      desc.innerText = data.verdict_reason;
+      document.getElementById('precisionValue').innerText = data.closure.relative_precision;
+      document.getElementById('precisionStatus').innerText = data.closure.linear_misclosure < 0.1 ? 'Surpasses 1:5,000 threshold' : 'Below statutory standard';
+
+      // Metrics Cards
+      document.getElementById('metricMisclosure').innerText = `${data.closure.linear_misclosure.toFixed(3)} m`;
+      document.getElementById('metricPerimeter').innerText = `Perimeter: ${data.closure.perimeter.toFixed(1)} m`;
+
+      document.getElementById('metricArea').innerText = `${(data.area.computed_m2 / 10000).toFixed(3)} Ha`;
+      document.getElementById('metricAreaDiff').innerText = `${data.area.difference_pct.toFixed(2)}% stated vs computed (${data.area.difference_m2.toFixed(1)} m²)`;
+
+      document.getElementById('metricDatum').innerText = data.datum.crs_name;
+      if (data.wgs84_coords && data.wgs84_coords.length > 0) {
+        document.getElementById('metricCoords').innerText = `Lon: ${data.wgs84_coords[0][0].toFixed(4)}, Lat: ${data.wgs84_coords[0][1].toFixed(4)}`;
+      }
+
+      const resOverlap = data.satellite.overlap_area_m2;
+      const metricResEl = document.getElementById('metricReserve');
+      if (resOverlap > 0) {
+        metricResEl.innerText = `${resOverlap.toFixed(0)} m² Overlap`;
+        metricResEl.className = 'text-xl font-bold text-rose-600';
+      } else {
+        metricResEl.innerText = '0 m² Overlap';
+        metricResEl.className = 'text-xl font-bold text-emerald-600';
+      }
+
+      // Meta AI Land Advisor Card
+      if (data.land_advisory) {
+        const adv = data.land_advisory;
+        document.getElementById('advisorLocationText').innerText = `${adv.locality} • ${adv.county} County`;
+        document.getElementById('advisorValuationMid').innerText = `KES ${(adv.valuation_kes_mid).toLocaleString('en-US', {maximumFractionDigits: 0})}`;
+        document.getElementById('advisorValuationRange').innerText = `Range: KES ${(adv.valuation_kes_min/1e6).toFixed(1)}M - ${(adv.valuation_kes_max/1e6).toFixed(1)}M`;
+        document.getElementById('advisorRatePerAcre').innerText = `KES ${(adv.price_per_acre_kes/1e6).toFixed(0)}M / Acre`;
+        document.getElementById('advisorZoning').innerText = adv.typical_zoning;
+
+        const advBadge = document.getElementById('advisorVerdictBadge');
+        if (adv.decision_verdict === 'CLEAR_BUY') {
+          advBadge.innerText = 'CLEAR BUY';
+          advBadge.className = 'text-xs font-black uppercase px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+          document.getElementById('advisorReserveStatus').innerText = '100% Clean Site';
+          document.getElementById('advisorReserveStatus').className = 'text-lg font-black text-emerald-400';
+        } else if (adv.decision_verdict === 'CAUTION') {
+          advBadge.innerText = 'CAUTION';
+          advBadge.className = 'text-xs font-black uppercase px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40';
+          document.getElementById('advisorReserveStatus').innerText = 'Pricing Divergence';
+          document.getElementById('advisorReserveStatus').className = 'text-lg font-black text-amber-400';
+        } else {
+          advBadge.innerText = 'DO NOT BUY';
+          advBadge.className = 'text-xs font-black uppercase px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40';
+          document.getElementById('advisorReserveStatus').innerText = 'Reserve Encroachment';
+          document.getElementById('advisorReserveStatus').className = 'text-lg font-black text-rose-400';
+        }
+      }
+
+      // Render CAD Canvas
+      renderCadPlot(data.raw_coords, data.adjusted_coords, data.legs);
+
+      // Satellite Image
+      if (currentScenarioId) {
+        document.getElementById('resultsSatImg').src = `/data/examples/${currentScenarioId}_satellite.png`;
+      } else if (uploadedSatB64) {
+        document.getElementById('resultsSatImg').src = uploadedSatB64;
+      }
+      const notesContainer = document.getElementById('satNotesList');
+      notesContainer.innerHTML = '';
+      (data.satellite.detected_features || []).forEach(f => {
+        const item = document.createElement('div');
+        item.innerText = `• ${f}`;
+        notesContainer.appendChild(item);
+      });
+
+      // Blunder Table
+      const blunderSection = document.getElementById('blunderSection');
+      const fixesBody = document.getElementById('fixesTableBody');
+      fixesBody.innerHTML = '';
+      if (data.candidate_fixes && data.candidate_fixes.length > 0) {
+        blunderSection.classList.remove('hidden');
+        data.candidate_fixes.slice(0, 5).forEach((f, idx) => {
+          const row = document.createElement('tr');
+          row.className = idx === 0 ? 'bg-amber-100/50 font-bold' : '';
+          row.innerHTML = `
+            <td class="p-3">#${idx + 1}</td>
+            <td class="p-3">Leg ${f.leg_index + 1}</td>
+            <td class="p-3 capitalize">${f.field}</td>
+            <td class="p-3 text-rose-700">${f.original_value}</td>
+            <td class="p-3 text-emerald-700">${f.corrected_value}</td>
+            <td class="p-3">${f.residual_misclosure.toFixed(4)} m</td>
+            <td class="p-3">${f.edit_distance} char</td>
+          `;
+          fixesBody.appendChild(row);
+        });
+      } else {
+        blunderSection.classList.add('hidden');
+      }
+
+      // Schedule of Readings Table
+      const legsBody = document.getElementById('legsTableBody');
+      legsBody.innerHTML = '';
+      (data.legs || []).forEach(l => {
+        const r = document.createElement('tr');
+        r.innerHTML = `
+          <td class="p-3">Leg ${l.index}</td>
+          <td class="p-3 font-semibold">${l.bearing_dms}</td>
+          <td class="p-3">${l.bearing_deg.toFixed(4)}°</td>
+          <td class="p-3">${l.distance_m.toFixed(3)} m</td>
+        `;
+        legsBody.appendChild(r);
+      });
+
+      // Markdown Advisory Report
+      const rawReport = data.advisory_report || '';
+      let html = rawReport
+        .replace(/### (.*)/g, '<h4 class="font-bold text-base text-slate-900 mt-2">$1</h4>')
+        .replace(/#### (.*)/g, '<h5 class="font-bold text-sm text-slate-800 mt-2">$1</h5>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n\n/g, '<p class="my-2"></p>')
+        .replace(/1\. (.*)/g, '<li class="ml-4 list-decimal">$1</li>')
+        .replace(/2\. (.*)/g, '<li class="ml-4 list-decimal">$1</li>')
+        .replace(/3\. (.*)/g, '<li class="ml-4 list-decimal">$1</li>')
+        .replace(/- (.*)/g, '<li class="ml-4 list-disc">$1</li>');
+      document.getElementById('advisoryReportContent').innerHTML = html;
+
+      // Update Kenya Map with Audited WGS84 coordinates if available
+      if (data.wgs84_coords && data.wgs84_coords.length >= 3) {
+        initKenyaMap();
+        if (auditedParcelLayer) {
+          kenyaMapInstance.removeLayer(auditedParcelLayer);
+        }
+        const latlngs = data.wgs84_coords.map(p => [p[1], p[0]]);
+        auditedParcelLayer = L.polygon(latlngs, {
+          color: data.verdict === 'GREEN' ? '#059669' : (data.verdict === 'AMBER' ? '#d97706' : '#dc2626'),
+          fillColor: data.verdict === 'GREEN' ? '#10b981' : (data.verdict === 'AMBER' ? '#f59e0b' : '#ef4444'),
+          fillOpacity: 0.45,
+          weight: 3
+        }).bindPopup(`<b>${data.lr_number}</b><br>Verdict: ${data.verdict}<br>Computed Area: ${(data.area.computed_m2/10000).toFixed(3)} Ha`);
+
+        auditedParcelLayer.addTo(kenyaMapInstance);
+      }
+
+      document.getElementById('resultsSection').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    // Render CAD Plot on HTML5 Canvas
+    function renderCadPlot(rawCoords, adjustedCoords, legs) {
+      const canvas = document.getElementById('cadCanvas');
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, w, h);
+
+      if (!rawCoords || rawCoords.length < 2) return;
+
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      rawCoords.forEach(([x, y]) => {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      });
+
+      const spanX = Math.max(maxX - minX, 10);
+      const spanY = Math.max(maxY - minY, 10);
+      const padding = 60;
+      const scale = Math.min((w - padding * 2) / spanX, (h - padding * 2) / spanY);
+
+      function toCanvas(x, y) {
+        return [
+          padding + (x - minX) * scale,
+          h - (padding + (y - minY) * scale),
+        ];
+      }
+
+      // Draw Grid Lines
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < w; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+      }
+      for (let y = 0; y < h; y += 40) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      }
+
+      // Draw Closed Polygon Fill (Adjusted)
+      if (adjustedCoords && adjustedCoords.length >= 3) {
+        ctx.beginPath();
+        const [firstX, firstY] = toCanvas(adjustedCoords[0][0], adjustedCoords[0][1]);
+        ctx.moveTo(firstX, firstY);
+        for (let i = 1; i < adjustedCoords.length; i++) {
+          const [cx, cy] = toCanvas(adjustedCoords[i][0], adjustedCoords[i][1]);
+          ctx.lineTo(cx, cy);
+        }
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.12)';
+        ctx.fill();
+      }
+
+      // Draw Raw Legs
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      const [sx, sy] = toCanvas(rawCoords[0][0], rawCoords[0][1]);
+      ctx.moveTo(sx, sy);
+      for (let i = 1; i < rawCoords.length; i++) {
+        const [cx, cy] = toCanvas(rawCoords[i][0], rawCoords[i][1]);
+        ctx.lineTo(cx, cy);
+      }
+      ctx.stroke();
+
+      // Draw Beacons (Pins) & Labels
+      rawCoords.forEach(([x, y], idx) => {
+        const [cx, cy] = toCanvas(x, y);
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.fillStyle = '#f8fafc';
+        ctx.font = 'bold 11px monospace';
+        ctx.fillText(`BP${idx + 1}`, cx + 8, cy - 6);
+      });
+
+      // Misclosure line if start and end don't meet
+      const [startPtX, startPtY] = toCanvas(rawCoords[0][0], rawCoords[0][1]);
+      const [endPtX, endPtY] = toCanvas(rawCoords[rawCoords.length - 1][0], rawCoords[rawCoords.length - 1][1]);
+      const distErr = Math.hypot(endPtX - startPtX, endPtY - startPtY);
+      if (distErr > 2) {
+        ctx.strokeStyle = '#f43f5e';
+        ctx.setLineDash([4, 4]);
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(endPtX, endPtY);
+        ctx.lineTo(startPtX, startPtY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#f43f5e';
+        ctx.fillText('Misclosure Gap', (startPtX + endPtX) / 2 + 10, (startPtY + endPtY) / 2);
+      }
+    }
+
+    // Modal Control Functions
+    function openApiKeyModal() {
+      document.getElementById('apiKeyModal').classList.remove('hidden');
+    }
+    function closeApiKeyModal() {
+      document.getElementById('apiKeyModal').classList.add('hidden');
+    }
+
+    function saveApiKey() {
+      const key = document.getElementById('modalApiKeyInput').value.trim();
+      if (!key) {
+        alert('Please enter a valid key.');
+        return;
+      }
+      fetch('/api/set-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ api_key: key })
+      })
+      .then(r => r.json())
+      .then(d => {
+        alert(d.message || 'Key saved!');
+        closeApiKeyModal();
+        location.reload();
+      })
+      .catch(e => alert('Failed to save key: ' + e));
+    }
+
+    function testMetaConnection() {
+      const key = document.getElementById('modalApiKeyInput').value.trim();
+      const resBox = document.getElementById('apiTestResultBox');
+      resBox.className = 'p-3 rounded-lg border text-xs bg-slate-100 border-slate-300 text-slate-700';
+      resBox.innerText = 'Pinging Meta Model API (muse-spark-1.3) at https://api.meta.ai/v1...';
+      resBox.classList.remove('hidden');
+
+      fetch('/api/test-meta', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ api_key: key || null })
+      })
+      .then(r => r.json())
+      .then(d => {
+        if (d.connected) {
+          resBox.className = 'p-3 rounded-lg border text-xs bg-emerald-50 border-emerald-300 text-emerald-800';
+          resBox.innerHTML = `<strong>Connected!</strong> ${d.message}<br>Model: <code>${d.model}</code> • Latency: ${d.latency_ms} ms<br>Response: <em>"${d.response_sample}"</em>`;
+        } else {
+          resBox.className = 'p-3 rounded-lg border text-xs bg-amber-50 border-amber-300 text-amber-800';
+          resBox.innerHTML = `<strong>Status: ${d.status}</strong><br>${d.message}`;
+        }
+      })
+      .catch(e => {
+        resBox.className = 'p-3 rounded-lg border text-xs bg-rose-50 border-rose-300 text-rose-800';
+        resBox.innerText = 'Connection test failed: ' + e;
+      });
+    }
+
+    // Manual Traverse Modal Handlers
+    function openManualModal() {
+      document.getElementById('manualModal').classList.remove('hidden');
+      if (document.getElementById('manualLegsContainer').children.length === 0) {
+        prefillSampleLegs();
+      }
+    }
+    function closeManualModal() {
+      document.getElementById('manualModal').classList.add('hidden');
+    }
+
+    function addManualLegRow(bearing = "090°00'00\"", dist = "50.000") {
+      const container = document.getElementById('manualLegsContainer');
+      const idx = container.children.length + 1;
+      const row = document.createElement('div');
+      row.className = 'flex items-center space-x-2 text-xs font-mono';
+      row.innerHTML = `
+        <span class="w-8 text-slate-500 font-sans">#${idx}</span>
+        <input type="text" placeholder="Bearing DMS" value="${bearing}" class="flex-1 border border-slate-300 rounded p-1.5 manual-bearing">
+        <input type="number" step="0.001" placeholder="Distance m" value="${dist}" class="w-24 border border-slate-300 rounded p-1.5 manual-dist">
+        <button onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-700 px-1 font-bold">×</button>
+      `;
+      container.appendChild(row);
+    }
+
+    function prefillSampleLegs() {
+      const container = document.getElementById('manualLegsContainer');
+      container.innerHTML = '';
+      addManualLegRow("000°00'00\"", "100.000");
+      addManualLegRow("090°00'00\"", "50.000");
+      addManualLegRow("180°00'00\"", "100.000");
+      addManualLegRow("270°00'00\"", "50.000");
+    }
+
+    function submitManualTraverse() {
+      const lr = document.getElementById('manualLrNumber').value;
+      const area = parseFloat(document.getElementById('manualStatedArea').value);
+      const rows = document.getElementById('manualLegsContainer').children;
+      const legs = [];
+
+      for (let r of rows) {
+        const b = r.querySelector('.manual-bearing').value.trim();
+        const d = r.querySelector('.manual-dist').value.trim();
+        if (b && d) {
+          legs.push([b, d]);
+        }
+      }
+
+      if (legs.length < 3) {
+        alert('Please enter at least 3 traverse legs.');
+        return;
+      }
+
+      closeManualModal();
+      document.getElementById('loadingIndicator').classList.remove('hidden');
+      document.getElementById('resultsSection').classList.add('hidden');
+
+      fetch('/api/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          manual_legs: legs,
+          manual_lr_number: lr,
+          manual_stated_area: area,
+          manual_stated_unit: "ha",
+          crs_name: document.getElementById('crsSelect').value,
+        })
+      })
+      .then(r => r.json())
+      .then(d => {
+        document.getElementById('loadingIndicator').classList.add('hidden');
+        renderResults(d);
+      })
+      .catch(err => {
+        document.getElementById('loadingIndicator').classList.add('hidden');
+        alert('Audit failed: ' + err);
+      });
+    }
+
+    // Load initial scenario on page load
+    window.onload = () => {
+      loadScenario('scenario_1');
+    };
+  </script>
+</body>
+</html>
