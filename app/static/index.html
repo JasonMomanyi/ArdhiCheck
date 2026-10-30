@@ -110,12 +110,20 @@
 
       <!-- Quick 1-Click Demo Scenarios (One Real Pipeline) -->
       <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm space-y-3">
-        <div class="flex items-center justify-between">
-          <h2 class="text-sm font-bold uppercase tracking-wider text-slate-600 flex items-center">
-            <i data-lucide="sparkles" class="w-4 h-4 mr-2 text-amber-500"></i>
-            Verified Benchmark Scenarios (Single Pipeline: Image → Spark → Geometry → Verdict)
-          </h2>
-          <span class="text-xs text-slate-500">Click any scenario to execute full audit</span>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center">
+              <i data-lucide="sparkles" class="w-4 h-4 mr-2 text-amber-500"></i>
+              Verified Kenyan Benchmark Scenarios & Test Data
+            </h2>
+            <p class="text-xs text-slate-500">Real cadastral scenarios across Kenya (Nairobi, Nakuru, Kiambu, Eldoret, Mombasa, Machakos, Kisumu, Naivasha)</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <a href="/data/examples/downloads/ArdhiCheck_Kenya_Test_Survey_Pack.zip" download class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition shadow-sm">
+              <i data-lucide="download" class="w-3.5 h-3.5 mr-1.5"></i>
+              <span>Download Test Pack (.zip)</span>
+            </a>
+          </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -126,7 +134,7 @@
               <span class="text-xs text-slate-600">0.50 Ha</span>
             </div>
             <div class="font-bold text-slate-900 text-sm mt-1.5 group-hover:text-emerald-700">Nairobi Upper Hill</div>
-            <div class="text-xs text-slate-600 mt-1 line-clamp-2">L.R. 209/14582. Traverses close to zero; area matches; zero reserve overlap.</div>
+            <div class="text-xs text-slate-600 mt-1 line-clamp-2">L.R. 209/14682. Traverses close to zero; area matches; zero reserve overlap.</div>
           </button>
 
           <!-- Preset 2 -->
@@ -157,6 +165,46 @@
             </div>
             <div class="font-bold text-slate-900 text-sm mt-1.5 group-hover:text-rose-700">Eldoret Title Inflation</div>
             <div class="text-xs text-slate-600 mt-1 line-clamp-2">L.R. 6140/11. Stated 1.20 Ha on paper, but geometry computes to only 0.50 Ha.</div>
+          </button>
+
+          <!-- Preset 5 -->
+          <button onclick="loadScenario('scenario_5')" class="text-left p-3.5 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/40 transition group">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">PASS (GREEN)</span>
+              <span class="text-xs text-slate-600">1.25 Ha</span>
+            </div>
+            <div class="font-bold text-slate-900 text-sm mt-1.5 group-hover:text-emerald-700">Mombasa Nyali Beach</div>
+            <div class="text-xs text-slate-600 mt-1 line-clamp-2">L.R. MN/I/5432. Irregular 5-sided coastal perimeter outside tidal setback.</div>
+          </button>
+
+          <!-- Preset 6 -->
+          <button onclick="loadScenario('scenario_6')" class="text-left p-3.5 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/40 transition group">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">PASS (GREEN)</span>
+              <span class="text-xs text-slate-600">2.50 Ha</span>
+            </div>
+            <div class="font-bold text-slate-900 text-sm mt-1.5 group-hover:text-emerald-700">Athi River Logistics Park</div>
+            <div class="text-xs text-slate-600 mt-1 line-clamp-2">L.R. 12800/4. Industrial parcel, GNSS survey, clear of SGR rail buffer.</div>
+          </button>
+
+          <!-- Preset 7 -->
+          <button onclick="loadScenario('scenario_7')" class="text-left p-3.5 rounded-lg border border-slate-200 hover:border-rose-500 hover:bg-rose-50/40 transition group">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded">FAIL (RED)</span>
+              <span class="text-xs text-slate-600">0.75 Ha</span>
+            </div>
+            <div class="font-bold text-slate-900 text-sm mt-1.5 group-hover:text-rose-700">Kisumu Lakefront Dunga</div>
+            <div class="text-xs text-slate-600 mt-1 line-clamp-2">L.R. KSM/BLOCK 14/89. Direct overlap with Lake Victoria 100m lakefront buffer.</div>
+          </button>
+
+          <!-- Preset 8 -->
+          <button onclick="loadScenario('scenario_8')" class="text-left p-3.5 rounded-lg border border-slate-200 hover:border-rose-500 hover:bg-rose-50/40 transition group">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded">FAIL (RED)</span>
+              <span class="text-xs text-slate-600">3.20 Ha</span>
+            </div>
+            <div class="font-bold text-slate-900 text-sm mt-1.5 group-hover:text-rose-700">Naivasha Olkaria Corridor</div>
+            <div class="text-xs text-slate-600 mt-1 line-clamp-2">L.R. 3981/15. Infringes on gazetted geothermal wayleave & wildlife corridor.</div>
           </button>
         </div>
       </div>
@@ -641,19 +689,32 @@
       </div>
 
       <div class="space-y-3 text-xs">
+        <!-- Hackathon Notice for Open-Weight Failover -->
+        <div class="p-3 rounded-lg bg-indigo-50/80 border border-indigo-200 text-indigo-950 space-y-1">
+          <div class="flex items-center space-x-1.5 font-bold text-indigo-900 text-[11px]">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-indigo-600"></i>
+            <span>Hackathon Open-Weight Eligibility (Cerebral Valley / Meta):</span>
+          </div>
+          <p class="text-[11px] leading-relaxed italic text-indigo-900/90">
+            "Meanwhile, you can still take part without Model API access. Build on Meta's open-weight models, such as Muse Glimmer, Muse Spark Open, or SAM, on compute you provide yourself. Those projects are eligible and won't count against you."
+          </p>
+        </div>
+
         <!-- Provider Selector -->
         <div>
-          <label class="block font-bold text-slate-800 mb-1">Select Meta Model Endpoint</label>
+          <label class="block font-bold text-slate-800 mb-1">Select Meta Model / Endpoint</label>
           <select id="modalProviderSelect" onchange="onProviderChange()" class="w-full border border-slate-300 rounded-lg p-2.5 font-sans text-xs bg-slate-50 focus:ring-2 focus:ring-emerald-500 outline-none">
-            <option value="meta_official">Meta Model API (dev.meta.ai) • muse-spark-1.3 [Default]</option>
-            <option value="spark_open">Self-Hosted Muse Spark Open • muse-spark-open (Verified Catalog ID)</option>
+            <option value="meta_official">Meta Model API (dev.meta.ai) • muse-spark-1.3 [Cloud Default]</option>
+            <option value="spark_open">Self-Hosted Muse Spark Open • muse-spark-open (Open Weights)</option>
+            <option value="muse_glimmer">Self-Hosted Muse Glimmer • muse-glimmer (Open Weights - Lightweight)</option>
+            <option value="sam_open">Self-Hosted SAM 3.1 • sam-3.1 (Open Weights - Media Segmentation)</option>
           </select>
         </div>
 
         <div id="providerHelpBox" class="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-start space-x-2">
           <i data-lucide="info" class="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5"></i>
           <div class="text-[11px] leading-tight">
-            <span id="providerHelpText"><strong>dev.meta.ai:</strong> Official endpoint for Muse Spark 1.3 and SAM 3.1 media segmentation.</span>
+            <span id="providerHelpText"><strong>dev.meta.ai:</strong> Official cloud endpoint for Muse Spark 1.3 and SAM 3.1 media segmentation.</span>
           </div>
         </div>
 
@@ -1391,10 +1452,18 @@
         baseEl.value = 'https://api.meta.ai/v1';
         modelEl.value = 'muse-spark-1.3';
         helpText.innerHTML = '<strong>dev.meta.ai:</strong> Official Meta Model API endpoint for Muse Spark 1.3 and SAM 3.1.';
-      } else {
+      } else if (p === 'spark_open') {
         baseEl.value = 'http://localhost:8080/v1';
         modelEl.value = 'muse-spark-open';
-        helpText.innerHTML = '<strong>Muse Spark Open:</strong> Meta open-weight model self-hosted on your own server/host.';
+        helpText.innerHTML = '<strong>Muse Spark Open:</strong> Meta open-weight model self-hosted on your own compute (vLLM / Ollama). Fully eligible under Cerebral Valley hackathon rules.';
+      } else if (p === 'muse_glimmer') {
+        baseEl.value = 'http://localhost:8080/v1';
+        modelEl.value = 'muse-glimmer';
+        helpText.innerHTML = '<strong>Muse Glimmer:</strong> Fast lightweight open-weight Meta model on self-hosted compute. Fully hackathon eligible.';
+      } else if (p === 'sam_open') {
+        baseEl.value = 'http://localhost:8080/v1';
+        modelEl.value = 'sam-3.1';
+        helpText.innerHTML = '<strong>SAM 3.1:</strong> Meta Segment Anything Model for spatial aerial/satellite segmentation on self-hosted GPU.';
       }
       lucide.createIcons();
     }

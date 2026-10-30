@@ -1,0 +1,41 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "lr_number": "L.R. 209/14682",
+        "locality": "Upper Hill, Nairobi",
+        "stated_area_ha": 0.5,
+        "datum": "Arc 1960 / UTM Zone 37S"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              36.816,
+              -1.299
+            ],
+            [
+              36.816,
+              -1.2981
+            ],
+            [
+              36.8164,
+              -1.2981
+            ],
+            [
+              36.8164,
+              -1.299
+            ],
+            [
+              36.816,
+              -1.299
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "id": "scenario_7_kisumu_lakefront",
+  "title": "Kisumu Dunga Lake Victoria Buffer Zone Overlap",
+  "lr_number": "L.R. KSM/BLOCK 14/89",
+  "district": "Kisumu",
+  "locality": "Dunga Beach / Lake Victoria Shore",
+  "stated_area": 0.75,
+  "stated_unit": "ha",
+  "crs_name": "arc1960_utm36s",
+  "start_coords": [
+    693000.0,
+    9987000.0
+  ],
+  "legs": [
+    [
+      "020\u00b000'00\"",
+      "100.000"
+    ],
+    [
+      "110\u00b000'00\"",
+      "75.000"
+    ],
+    [
+      "200\u00b000'00\"",
+      "100.000"
+    ],
+    [
+      "290\u00b000'00\"",
+      "75.000"
+    ]
+  ],
+  "has_riparian_overlap": true,
+  "overlap_area_m2": 450.0,
+  "expected_verdict": "RED",
+  "notes": [
+    "Direct frontage on Lake Victoria high-water buffer.",
+    "Violates statutory 100m lake protection zone (Survey Act & EMCA).",
+    "High risk of reclamation or structure demolition by NEMA."
+  ]
+}

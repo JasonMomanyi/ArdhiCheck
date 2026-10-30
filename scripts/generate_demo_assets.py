@@ -82,25 +82,28 @@ def _draw_survey_plan(
     ]
     draw.polygon(poly_pts, outline=(0, 60, 160), fill=(235, 245, 255), width=4)
 
-    beacons = ["BP1", "BP2", "BP3", "BP4"]
-    for i, pt in enumerate(poly_pts):
+    # Generate beacons dynamically
+    num_legs = len(legs)
+    beacons = [f"BP{i + 1}" for i in range(num_legs)]
+    for i, pt in enumerate(poly_pts[:num_legs]):
         draw.ellipse(
             [(pt[0] - 6, pt[1] - 6), (pt[0] + 6, pt[1] + 6)],
             fill=(200, 0, 0),
             outline=(0, 0, 0),
             width=2,
         )
-        offset = [(-25, 15), (-25, -20), (20, -20), (20, 15)][i]
+        offset = [(-25, 15), (-25, -20), (20, -20), (20, 15), (0, 25)][i % 5]
         draw.text((pt[0] + offset[0], pt[1] + offset[1]), beacons[i], fill=(160, 0, 0))
 
     # Annotate sides with bearings & distances
-    side_annotations = [
-        (center_x - 240, center_y, f"{legs[0][0]}  {legs[0][1]}m"),
-        (center_x, center_y - 150, f"{legs[1][0]}  {legs[1][1]}m"),
-        (center_x + 200, center_y, f"{legs[2][0]}  {legs[2][1]}m"),
-        (center_x, center_y + 140, f"{legs[3][0]}  {legs[3][1]}m"),
-    ]
-    for ax, ay, text in side_annotations:
+    for i in range(min(4, num_legs)):
+        side_annotations = [
+            (center_x - 240, center_y, f"{legs[0][0]}  {legs[0][1]}m"),
+            (center_x, center_y - 150, f"{legs[1][0]}  {legs[1][1]}m"),
+            (center_x + 200, center_y, f"{legs[2][0]}  {legs[2][1]}m"),
+            (center_x, center_y + 140, f"{legs[3][0]}  {legs[3][1]}m"),
+        ]
+        ax, ay, text = side_annotations[i]
         draw.text((ax, ay), text, fill=(10, 50, 120), anchor="mm")
 
     # Plot details badge in center of polygon
@@ -394,7 +397,251 @@ def main() -> None:
     _draw_satellite_clip(s4, title=meta4["title"])
     (data_dir / "scenario_4.json").write_text(json.dumps(meta4, indent=2))
 
-    print("Generated 4 demo scenarios in data/examples/")
+    # 5. Coastal Beach Plot - Mombasa Nyali (Pass / Green - Irregular 5-sided perimeter)
+    p5 = data_dir / "scenario_5_nyali_beach_plan.png"
+    s5 = data_dir / "scenario_5_satellite.png"
+    meta5 = {
+        "id": "scenario_5_nyali_beach",
+        "title": "Mombasa Nyali Coastal Plot (5-Sided Perimeter)",
+        "lr_number": "L.R. MN/I/5432",
+        "district": "Mombasa",
+        "locality": "Nyali Beachfront / Links Road",
+        "stated_area": 1.25,
+        "stated_unit": "ha",
+        "crs_name": "arc1960_utm37s",
+        "start_coords": [573000.0, 9553000.0],
+        "legs": [
+            ("015°00'00\"", "120.000"),
+            ("095°00'00\"", "105.000"),
+            ("165°00'00\"", "115.000"),
+            ("245°00'00\"", "80.000"),
+            ("290°36'12\"", "45.280"),
+        ],
+        "expected_verdict": "GREEN",
+        "notes": [
+            "Cadastral survey of prime coastal residential/hotel development parcel.",
+            "Traverse loop closes within statutory 1:10,000 Class A precision.",
+            "Outside 60m high-water mark tidal statutory setback.",
+        ],
+    }
+    _draw_survey_plan(
+        p5,
+        title=meta5["title"],
+        lr_number=meta5["lr_number"],
+        district=meta5["district"],
+        locality=meta5["locality"],
+        legs=meta5["legs"],
+        stated_area="1.250 Ha",
+        datum_text="Arc 1960 / UTM Zone 37S (EPSG 21037)",
+        notes=meta5["notes"],
+    )
+    _draw_satellite_clip(s5, title=meta5["title"])
+    (data_dir / "scenario_5.json").write_text(json.dumps(meta5, indent=2))
+
+    # 6. Industrial Logistics Park - Machakos / Athi River (Pass / Green)
+    p6 = data_dir / "scenario_6_athi_river_plan.png"
+    s6 = data_dir / "scenario_6_satellite.png"
+    meta6 = {
+        "id": "scenario_6_athi_river",
+        "title": "Athi River Industrial Logistics Park",
+        "lr_number": "L.R. 12800/4",
+        "district": "Machakos",
+        "locality": "Athi River / Mombasa Road Corridor",
+        "stated_area": 2.50,
+        "stated_unit": "ha",
+        "crs_name": "arc1960_utm37s",
+        "start_coords": [278000.0, 9839000.0],
+        "legs": [
+            ("000°00'00\"", "200.000"),
+            ("090°00'00\"", "125.000"),
+            ("180°00'00\"", "200.000"),
+            ("270°00'00\"", "125.000"),
+        ],
+        "expected_verdict": "GREEN",
+        "notes": [
+            "Heavy industrial warehousing zoned parcel.",
+            "Traverse closes with zero linear error; perimeter 650.0m.",
+            "Clear of SGR railway reserve buffer and highway setback.",
+        ],
+    }
+    _draw_survey_plan(
+        p6,
+        title=meta6["title"],
+        lr_number=meta6["lr_number"],
+        district=meta6["district"],
+        locality=meta6["locality"],
+        legs=meta6["legs"],
+        stated_area="2.500 Ha",
+        datum_text="Arc 1960 / UTM Zone 37S (EPSG 21037)",
+        notes=meta6["notes"],
+    )
+    _draw_satellite_clip(s6, title=meta6["title"])
+    (data_dir / "scenario_6.json").write_text(json.dumps(meta6, indent=2))
+
+    # 7. Lake Victoria Buffer Zone - Kisumu (Fail / Red - Riparian)
+    p7 = data_dir / "scenario_7_kisumu_lakefront_plan.png"
+    s7 = data_dir / "scenario_7_satellite.png"
+    meta7 = {
+        "id": "scenario_7_kisumu_lakefront",
+        "title": "Kisumu Dunga Lake Victoria Buffer Zone Overlap",
+        "lr_number": "L.R. KSM/BLOCK 14/89",
+        "district": "Kisumu",
+        "locality": "Dunga Beach / Lake Victoria Shore",
+        "stated_area": 0.75,
+        "stated_unit": "ha",
+        "crs_name": "arc1960_utm36s",
+        "start_coords": [693000.0, 9987000.0],
+        "legs": [
+            ("020°00'00\"", "100.000"),
+            ("110°00'00\"", "75.000"),
+            ("200°00'00\"", "100.000"),
+            ("290°00'00\"", "75.000"),
+        ],
+        "has_riparian_overlap": True,
+        "overlap_area_m2": 450.0,
+        "expected_verdict": "RED",
+        "notes": [
+            "Direct frontage on Lake Victoria high-water buffer.",
+            "Violates statutory 100m lake protection zone (Survey Act & EMCA).",
+            "High risk of reclamation or structure demolition by NEMA.",
+        ],
+    }
+    _draw_survey_plan(
+        p7,
+        title=meta7["title"],
+        lr_number=meta7["lr_number"],
+        district=meta7["district"],
+        locality=meta7["locality"],
+        legs=meta7["legs"],
+        stated_area="0.750 Ha",
+        datum_text="Arc 1960 / UTM Zone 36S (EPSG 21036)",
+        notes=meta7["notes"],
+    )
+    _draw_satellite_clip(s7, title=meta7["title"], feature_type="river")
+    (data_dir / "scenario_7.json").write_text(json.dumps(meta7, indent=2))
+
+    # 8. Naivasha Wildlife & Energy Corridor (Fail / Red - Reserve Overlap)
+    p8 = data_dir / "scenario_8_naivasha_corridor_plan.png"
+    s8 = data_dir / "scenario_8_satellite.png"
+    meta8 = {
+        "id": "scenario_8_naivasha_corridor",
+        "title": "Naivasha Geothermal & Wildlife Corridor Encroachment",
+        "lr_number": "L.R. 3981/15",
+        "district": "Nakuru",
+        "locality": "Lake Naivasha / Olkaria Buffer",
+        "stated_area": 3.20,
+        "stated_unit": "ha",
+        "crs_name": "arc1960_utm37s",
+        "start_coords": [205000.0, 9918000.0],
+        "legs": [
+            ("045°00'00\"", "200.000"),
+            ("135°00'00\"", "160.000"),
+            ("225°00'00\"", "200.000"),
+            ("315°00'00\"", "160.000"),
+        ],
+        "has_riparian_overlap": True,
+        "expected_verdict": "RED",
+        "notes": [
+            "Survey overlaps gazetted KWS wildlife dispersal corridor.",
+            "Infringes upon KenGen high-pressure geothermal pipeline wayleave.",
+            "Title cannot be registered; deed plan revoked under Cap 299.",
+        ],
+    }
+    _draw_survey_plan(
+        p8,
+        title=meta8["title"],
+        lr_number=meta8["lr_number"],
+        district=meta8["district"],
+        locality=meta8["locality"],
+        legs=meta8["legs"],
+        stated_area="3.200 Ha",
+        datum_text="Arc 1960 / UTM Zone 37S (EPSG 21037)",
+        notes=meta8["notes"],
+    )
+    _draw_satellite_clip(s8, title=meta8["title"])
+    (data_dir / "scenario_8.json").write_text(json.dumps(meta8, indent=2))
+
+    # Build Downloads directory with CSV, GeoJSON and ZIP
+    downloads_dir = data_dir / "downloads"
+    downloads_dir.mkdir(parents=True, exist_ok=True)
+
+    # 1. CSV coordinates
+    csv1 = downloads_dir / "nairobi_upperhill_lr209_14682.csv"
+    csv1.write_text(
+        "Leg,Bearing_DMS,Distance_m\n"
+        "1,000°00'00\",100.000\n"
+        "2,090°00'00\",50.000\n"
+        "3,180°00'00\",100.000\n"
+        "4,270°00'00\",50.000\n",
+        encoding="utf-8",
+    )
+
+    csv2 = downloads_dir / "nakuru_residential_lr8421_39.csv"
+    csv2.write_text(
+        "Leg,Bearing_DMS,Distance_m,Notes\n"
+        "1,000°00'00\",100.000,BP1 to BP2\n"
+        "2,009°00'00\",50.000,BP2 to BP3 (Transposed typo 009 vs 090)\n"
+        "3,180°00'00\",100.000,BP3 to BP4\n"
+        "4,270°00'00\",50.000,BP4 to BP1\n",
+        encoding="utf-8",
+    )
+
+    csv6 = downloads_dir / "athi_river_industrial_lr12800_4.csv"
+    csv6.write_text(
+        "Leg,Bearing_DMS,Distance_m\n"
+        "1,000°00'00\",200.000\n"
+        "2,090°00'00\",125.000\n"
+        "3,180°00'00\",200.000\n"
+        "4,270°00'00\",125.000\n",
+        encoding="utf-8",
+    )
+
+    # 2. GeoJSON boundaries
+    geojson1 = downloads_dir / "nairobi_upperhill_lr209_14682.geojson"
+    geojson1.write_text(
+        json.dumps({
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "lr_number": "L.R. 209/14682",
+                        "locality": "Upper Hill, Nairobi",
+                        "stated_area_ha": 0.50,
+                        "datum": "Arc 1960 / UTM Zone 37S"
+                    },
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[
+                            [36.8160, -1.2990],
+                            [36.8160, -1.2981],
+                            [36.8164, -1.2981],
+                            [36.8164, -1.2990],
+                            [36.8160, -1.2990]
+                        ]]
+                    }
+                }
+            ]
+        }, indent=2),
+        encoding="utf-8",
+    )
+
+    # 3. Create a master ZIP archive of all sample datasets
+    import zipfile
+    zip_path = downloads_dir / "ArdhiCheck_Kenya_Test_Survey_Pack.zip"
+    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+        for p in sorted(data_dir.glob("scenario_*_plan.png")):
+            zf.write(p, arcname=f"plans/{p.name}")
+        for s in sorted(data_dir.glob("scenario_*_satellite.png")):
+            zf.write(s, arcname=f"satellite/{s.name}")
+        for j in sorted(data_dir.glob("scenario_*.json")):
+            zf.write(j, arcname=f"metadata/{j.name}")
+        zf.write(csv1, arcname=f"tables/{csv1.name}")
+        zf.write(csv2, arcname=f"tables/{csv2.name}")
+        zf.write(csv6, arcname=f"tables/{csv6.name}")
+        zf.write(geojson1, arcname=f"gis/{geojson1.name}")
+
+    print("Generated 8 realistic Kenyan demo scenarios & downloadable test survey pack in data/examples/")
 
 
 if __name__ == "__main__":

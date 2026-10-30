@@ -180,6 +180,8 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
             preset_hint = payload.get("preset_hint")
             plan_b64 = payload.get("plan_image_b64")
             sat_b64 = payload.get("satellite_image_b64")
+            document_text = payload.get("document_text")
+            filename = payload.get("filename", "")
             manual_legs = payload.get("manual_legs")
             manual_lr = payload.get("manual_lr_number")
             manual_area = payload.get("manual_stated_area")
@@ -210,6 +212,8 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
                 result = run_survey_audit(
                     plan_image_bytes=plan_bytes,
                     satellite_image_bytes=sat_bytes,
+                    document_text=document_text,
+                    filename=filename,
                     preset_hint=preset_hint,
                     manual_legs=manual_legs,
                     manual_lr_number=manual_lr,

@@ -15,12 +15,16 @@ Conforms strictly to hackathon rules:
 
 from __future__ import annotations
 
+import csv
+import io
+import json
+import math
 import time
 from pathlib import Path
 from typing import Any
 
 from app.geo.area import compare_stated_area, polygon_area_m2
-from app.geo.bearings import parse_bearing
+from app.geo.bearings import format_bearing, parse_bearing
 from app.geo.datum import transform_to_wgs84
 from app.geo.fixes import suggest_single_value_fixes
 from app.geo.traverse import Leg, bowditch_adjust, closure, compute_traverse
@@ -29,6 +33,114 @@ from app.meta.client import MetaModelClient
 LEGAL_DISCLAIMER = (
     "Not legal advice. Not affiliated with the Ministry of Lands or Ardhisasa."
 )
+
+
+def parse_tabular_or_gis_data(text_content: str, filename: str = "") -> dict[str, Any] | None:
+    """Parse CSV, TSV, or GeoJSON into traverse legs, stated area, and LR number."""
+    text_content = text_content.strip()
+    if not text_content:
+        return None
+
+    # 1. GeoJSON Parsing
+    if text_content.startswith("{") and ("Feature" in text_content or "coordinates" in text_content):
+        try:
+            data = json.loads(text_content)
+            coords = []
+            props = {}
+            if data.get("type") == "FeatureCollection" and data.get("features"):
+                feat = data["features"][0]
+                geom = feat.get("geometry", {})
+                props = feat.get("properties", {})
+                if geom.get("type") == "Polygon" and geom.get("coordinates"):
+                    coords = geom["coordinates"][0]
+            elif data.get("type") == "Feature":
+                geom = data.get("geometry", {})
+                props = data.get("properties", {})
+                if geom.get("type") == "Polygon" and geom.get("coordinates"):
+                    coords = geom["coordinates"][0]
+            elif data.get("type") == "Polygon" and data.get("coordinates"):
+                coords = data["coordinates"][0]
+
+            if len(coords) >= 4:
+                avg_lat = sum(c[1] for c in coords) / len(coords)
+                is_deg = abs(coords[0][0]) < 180 and abs(coords[0][1]) < 90
+                m_per_deg_lat = 111132.95
+                m_per_deg_lon = 111412.84 * math.cos(math.radians(avg_lat)) if is_deg else 1.0
+
+                legs = []
+                for i in range(len(coords) - 1):
+                    p1 = coords[i]
+                    p2 = coords[i + 1]
+                    if is_deg:
+                        dx = (p2[0] - p1[0]) * m_per_deg_lon
+                        dy = (p2[1] - p1[1]) * m_per_deg_lat
+                    else:
+                        dx = p2[0] - p1[0]
+                        dy = p2[1] - p1[1]
+                    dist = math.hypot(dx, dy)
+                    if dist < 0.001:
+                        continue
+                    az = (math.degrees(math.atan2(dx, dy)) + 360.0) % 360.0
+                    legs.append((format_bearing(az, seconds=True), f"{dist:.3f}"))
+
+                if len(legs) >= 3:
+                    lr_num = (
+                        props.get("lr_number")
+                        or props.get("LR_NUMBER")
+                        or (Path(filename).stem if filename else "L.R. GEOJSON/UPLOAD")
+                    )
+                    stated_a = props.get("stated_area_ha") or props.get("area_ha") or 0.50
+                    return {
+                        "legs": legs,
+                        "lr_number": str(lr_num),
+                        "stated_area": float(stated_a),
+                        "stated_unit": "ha",
+                        "notes": [f"Parsed {len(legs)} boundary legs from GeoJSON parcel polygon."],
+                    }
+        except Exception:
+            pass
+
+    # 2. CSV / TSV Parsing
+    try:
+        f = io.StringIO(text_content)
+        sample = text_content[:1024]
+        delimiter = "\t" if "\t" in sample and "," not in sample else ","
+        reader = csv.reader(f, delimiter=delimiter)
+        rows = [r for r in reader if r and any(cell.strip() for cell in r)]
+        if len(rows) >= 2:
+            headers = [h.strip().lower() for h in rows[0]]
+            b_idx = next(
+                (i for i, h in enumerate(headers) if "bearing" in h or "azimuth" in h), None
+            )
+            d_idx = next((i for i, h in enumerate(headers) if "dist" in h or "length" in h), None)
+
+            if b_idx is not None and d_idx is not None:
+                legs = []
+                for row in rows[1:]:
+                    if len(row) > max(b_idx, d_idx):
+                        b_val = row[b_idx].strip()
+                        d_val = row[d_idx].strip()
+                        if b_val and d_val:
+                            try:
+                                float(d_val)
+                                legs.append((b_val, d_val))
+                            except ValueError:
+                                continue
+                if len(legs) >= 3:
+                    lr_num = (Path(filename).stem if filename else "L.R. CSV/UPLOAD").replace(
+                        "_", " "
+                    ).upper()
+                    return {
+                        "legs": legs,
+                        "lr_number": lr_num,
+                        "stated_area": 0.50,
+                        "stated_unit": "ha",
+                        "notes": [f"Parsed {len(legs)} traverse legs from CSV/TSV table."],
+                    }
+    except Exception:
+        pass
+
+    return None
 
 
 def _find_preset_image(preset_hint: str, kind: str = "plan") -> bytes | None:
@@ -49,6 +161,8 @@ def _find_preset_image(preset_hint: str, kind: str = "plan") -> bytes | None:
 def run_survey_audit(
     plan_image_bytes: bytes | None = None,
     satellite_image_bytes: bytes | None = None,
+    document_text: str | None = None,
+    filename: str = "",
     preset_hint: str | None = None,
     manual_legs: list[tuple[str, str]] | None = None,
     manual_lr_number: str | None = None,
@@ -70,7 +184,25 @@ def run_survey_audit(
         if not satellite_image_bytes:
             satellite_image_bytes = _find_preset_image(preset_hint, "satellite")
 
-    if manual_legs:
+    parsed_doc = parse_tabular_or_gis_data(document_text or "", filename) if document_text else None
+
+    if parsed_doc:
+        legs_as_text = parsed_doc["legs"]
+        lr_number = manual_lr_number or parsed_doc["lr_number"]
+        stated_area = (
+            manual_stated_area if manual_stated_area is not None else parsed_doc["stated_area"]
+        )
+        stated_unit = manual_stated_unit or parsed_doc["stated_unit"]
+        extraction_source = "Document / GIS Import"
+        notes = parsed_doc["notes"]
+        extraction_prov = {
+            "source": f"Uploaded File ({Path(filename).name if filename else 'Document'})",
+            "model_name": "none",
+            "request_id": "document_parse",
+            "latency_ms": 1,
+            "tokens_used": 0,
+        }
+    elif manual_legs:
         legs_as_text = manual_legs
         lr_number = manual_lr_number or "L.R. MANUAL/INPUT"
         stated_area = manual_stated_area if manual_stated_area is not None else 0.50

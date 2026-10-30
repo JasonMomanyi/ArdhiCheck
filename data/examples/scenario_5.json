@@ -1,0 +1,42 @@
+{
+  "id": "scenario_5_nyali_beach",
+  "title": "Mombasa Nyali Coastal Plot (5-Sided Perimeter)",
+  "lr_number": "L.R. MN/I/5432",
+  "district": "Mombasa",
+  "locality": "Nyali Beachfront / Links Road",
+  "stated_area": 1.25,
+  "stated_unit": "ha",
+  "crs_name": "arc1960_utm37s",
+  "start_coords": [
+    573000.0,
+    9553000.0
+  ],
+  "legs": [
+    [
+      "015\u00b000'00\"",
+      "120.000"
+    ],
+    [
+      "095\u00b000'00\"",
+      "105.000"
+    ],
+    [
+      "165\u00b000'00\"",
+      "115.000"
+    ],
+    [
+      "245\u00b000'00\"",
+      "80.000"
+    ],
+    [
+      "290\u00b036'12\"",
+      "45.280"
+    ]
+  ],
+  "expected_verdict": "GREEN",
+  "notes": [
+    "Cadastral survey of prime coastal residential/hotel development parcel.",
+    "Traverse loop closes within statutory 1:10,000 Class A precision.",
+    "Outside 60m high-water mark tidal statutory setback."
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "id": "scenario_8_naivasha_corridor",
+  "title": "Naivasha Geothermal & Wildlife Corridor Encroachment",
+  "lr_number": "L.R. 3981/15",
+  "district": "Nakuru",
+  "locality": "Lake Naivasha / Olkaria Buffer",
+  "stated_area": 3.2,
+  "stated_unit": "ha",
+  "crs_name": "arc1960_utm37s",
+  "start_coords": [
+    205000.0,
+    9918000.0
+  ],
+  "legs": [
+    [
+      "045\u00b000'00\"",
+      "200.000"
+    ],
+    [
+      "135\u00b000'00\"",
+      "160.000"
+    ],
+    [
+      "225\u00b000'00\"",
+      "200.000"
+    ],
+    [
+      "315\u00b000'00\"",
+      "160.000"
+    ]
+  ],
+  "has_riparian_overlap": true,
+  "expected_verdict": "RED",
+  "notes": [
+    "Survey overlaps gazetted KWS wildlife dispersal corridor.",
+    "Infringes upon KenGen high-pressure geothermal pipeline wayleave.",
+    "Title cannot be registered; deed plan revoked under Cap 299."
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "id": "scenario_6_athi_river",
+  "title": "Athi River Industrial Logistics Park",
+  "lr_number": "L.R. 12800/4",
+  "district": "Machakos",
+  "locality": "Athi River / Mombasa Road Corridor",
+  "stated_area": 2.5,
+  "stated_unit": "ha",
+  "crs_name": "arc1960_utm37s",
+  "start_coords": [
+    278000.0,
+    9839000.0
+  ],
+  "legs": [
+    [
+      "000\u00b000'00\"",
+      "200.000"
+    ],
+    [
+      "090\u00b000'00\"",
+      "125.000"
+    ],
+    [
+      "180\u00b000'00\"",
+      "200.000"
+    ],
+    [
+      "270\u00b000'00\"",
+      "125.000"
+    ]
+  ],
+  "expected_verdict": "GREEN",
+  "notes": [
+    "Heavy industrial warehousing zoned parcel.",
+    "Traverse closes with zero linear error; perimeter 650.0m.",
+    "Clear of SGR railway reserve buffer and highway setback."
+  ]
+}
