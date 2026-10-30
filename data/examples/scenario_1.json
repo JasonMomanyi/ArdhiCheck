@@ -1,0 +1,38 @@
+{
+  "id": "scenario_1_clean",
+  "title": "Clean Survey Plan - Nairobi Upper Hill",
+  "lr_number": "L.R. 209/14582",
+  "district": "Nairobi",
+  "locality": "Upper Hill / Community",
+  "stated_area": 0.5,
+  "stated_unit": "ha",
+  "crs_name": "arc1960_utm37s",
+  "start_coords": [
+    257000.0,
+    9857000.0
+  ],
+  "legs": [
+    [
+      "000\u00b000'00\"",
+      "100.000"
+    ],
+    [
+      "090\u00b000'00\"",
+      "50.000"
+    ],
+    [
+      "180\u00b000'00\"",
+      "100.000"
+    ],
+    [
+      "270\u00b000'00\"",
+      "50.000"
+    ]
+  ],
+  "expected_verdict": "GREEN",
+  "notes": [
+    "All boundary beacons found in situ (iron pins in concrete).",
+    "Survey carried out in accordance with Survey Act Cap 299.",
+    "Traverse closes with zero linear error."
+  ]
+}

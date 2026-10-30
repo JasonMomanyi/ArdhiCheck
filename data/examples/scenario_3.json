@@ -1,0 +1,40 @@
+{
+  "id": "scenario_3_riparian",
+  "title": "Riparian Reserve Overlap - Kiambu / Nairobi River",
+  "lr_number": "L.R. 11942/8",
+  "district": "Kiambu",
+  "locality": "Ruaka / Karura River Basin",
+  "stated_area": 0.5,
+  "stated_unit": "ha",
+  "crs_name": "arc1960_utm37s",
+  "start_coords": [
+    254000.0,
+    9864000.0
+  ],
+  "legs": [
+    [
+      "000\u00b000'00\"",
+      "100.000"
+    ],
+    [
+      "090\u00b000'00\"",
+      "50.000"
+    ],
+    [
+      "180\u00b000'00\"",
+      "100.000"
+    ],
+    [
+      "270\u00b000'00\"",
+      "50.000"
+    ]
+  ],
+  "has_riparian_overlap": true,
+  "overlap_area_m2": 240.0,
+  "expected_verdict": "RED",
+  "notes": [
+    "Bordering perennial stream / river reserve on Eastern flank.",
+    "Environmental Management and Coordination Act (EMCA) requires 30m buffer.",
+    "Satellite clip shows building/fence inside protected riparian reserve."
+  ]
+}

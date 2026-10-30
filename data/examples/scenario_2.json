@@ -1,0 +1,38 @@
+{
+  "id": "scenario_2_transposed",
+  "title": "Transposed Bearing Blunder - Nakuru Municipality",
+  "lr_number": "L.R. 8421/39",
+  "district": "Nakuru",
+  "locality": "Milimani Estate",
+  "stated_area": 0.5,
+  "stated_unit": "ha",
+  "crs_name": "arc1960_utm36s",
+  "start_coords": [
+    182000.0,
+    9965000.0
+  ],
+  "legs": [
+    [
+      "000\u00b000'00\"",
+      "100.000"
+    ],
+    [
+      "009\u00b000'00\"",
+      "50.000"
+    ],
+    [
+      "180\u00b000'00\"",
+      "100.000"
+    ],
+    [
+      "270\u00b000'00\"",
+      "50.000"
+    ]
+  ],
+  "expected_verdict": "AMBER",
+  "notes": [
+    "Survey conducted using total station equipment.",
+    "Suspected clerical transposition in leg BP2-BP3 azimuth.",
+    "ArdhiCheck Error Localiser identifies 009\u00b0 -> 090\u00b0 correction."
+  ]
+}
