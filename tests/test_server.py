@@ -55,6 +55,19 @@ def test_server_health_handler():
     data = json.loads(body.decode("utf-8"))
     assert data["status"] == "healthy"
     assert "muse-spark-1.3" in data["model"]
+    assert "disclaimer" in data
+    assert "Not legal advice" in data["disclaimer"]
+
+
+def test_server_layers_handler():
+    handler = MockServerRequest("GET", "/api/layers")
+    status, _, body = handler.get_response()
+    assert status == 200
+    data = json.loads(body.decode("utf-8"))
+    assert len(data) >= 4
+    for lyr in data:
+        assert "licence" in lyr
+        assert "source" in lyr
 
 
 def test_server_examples_handler():
@@ -75,6 +88,8 @@ def test_server_check_post_handler():
     data = json.loads(body.decode("utf-8"))
     assert data["verdict"] == "GREEN"
     assert data["lr_number"] == "L.R. 209/14582"
+    assert "provenance" in data
+    assert "disclaimer" in data
 
 
 def test_server_static_index_handler():
@@ -84,29 +99,28 @@ def test_server_static_index_handler():
     assert b"ArdhiCheck" in body
 
 
-def test_server_advisor_handler():
-    coords = [[36.960, -1.145], [36.962, -1.145], [36.962, -1.147], [36.960, -1.147]]
-    # 12-acre plot in Ruiru: fair market value is ~KES 350M
-    payload = json.dumps({"coords": coords, "asking_price_kes": 350_000_000}).encode("utf-8")
-    handler = MockServerRequest("POST", "/api/advisor", body=payload)
+def test_server_screen_reserves_handler():
+    coords = [[36.830, -1.240], [36.835, -1.240], [36.835, -1.245], [36.830, -1.245]]
+    payload = json.dumps({"coords": coords, "riparian_buffer_m": 25.0}).encode("utf-8")
+    handler = MockServerRequest("POST", "/api/screen-reserves", body=payload)
     status, _, body = handler.get_response()
     assert status == 200
     data = json.loads(body.decode("utf-8"))
-    assert data["county"] == "Kiambu"
-    assert data["decision_verdict"] == "CLEAR_BUY"
-    assert data["valuation_kes_mid"] > 0
-    assert data["is_safe_residential"] is True
+    assert data["riparian_buffer_m"] == 25.0
+    assert len(data["conflicts"]) >= 1
+    assert "Karura Forest" in data["conflicts"][0]["name"]
+    assert "disclaimer" in data
 
 
 def test_server_test_meta_demo_handler():
-    # Ensure no API key set
     old_key = os.environ.pop("MODEL_API_KEY", None)
     try:
         handler = MockServerRequest("POST", "/api/test-meta", body=b"{}")
         status, _, body = handler.get_response()
         assert status == 200
         data = json.loads(body.decode("utf-8"))
-        assert data["status"] == "demo_mode"
+        assert data["connected"] is False
+        assert data["status"] == "Offline replay (pre-recorded)"
         assert data["model"] == "muse-spark-1.3"
     finally:
         if old_key is not None:

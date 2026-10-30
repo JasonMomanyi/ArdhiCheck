@@ -1,12 +1,9 @@
 """Meta Model API integration for ArdhiCheck."""
 
-from app.meta.advisor import (
-    LandAdvisoryResult,
-    evaluate_land_parcel,
-    identify_kenya_locality,
-    screen_kenyan_reserves,
-)
 from app.meta.client import (
+    DEFAULT_MODEL,
+    META_API_BASE_URL,
+    MUSE_SPARK_OPEN_MODEL,
     MetaModelClient,
     PlanExtractionResult,
     SatelliteAnalysisResult,
@@ -14,12 +11,11 @@ from app.meta.client import (
 )
 
 __all__ = [
-    "LandAdvisoryResult",
+    "DEFAULT_MODEL",
+    "META_API_BASE_URL",
+    "MUSE_SPARK_OPEN_MODEL",
     "MetaModelClient",
     "PlanExtractionResult",
     "SatelliteAnalysisResult",
-    "evaluate_land_parcel",
-    "identify_kenya_locality",
     "load_env_file",
-    "screen_kenyan_reserves",
 ]

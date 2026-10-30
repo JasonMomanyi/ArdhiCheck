@@ -2,6 +2,11 @@
 
 Provides REST API endpoints and serves the modern frontend application.
 Uses Python standard library http.server for zero external runtime web dependencies.
+Strictly adheres to Meta Hackathon rules:
+- Meta Muse models (muse-spark-1.3, optional muse-spark-open) and SAM 3.1.
+- Honest offline replay reporting when live key is not configured.
+- No valuation or buyer advice.
+- Prominent disclaimers and data layer attributions.
 """
 
 from __future__ import annotations
@@ -11,15 +16,14 @@ import json
 import mimetypes
 import os
 import sys
-import time
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
-from app.meta.advisor import evaluate_land_parcel
+from app.geo.reserves import get_layer_metadata, screen_reserves_pure
 from app.meta.client import MetaModelClient, load_env_file
-from app.pipeline import run_survey_audit
+from app.pipeline import LEGAL_DISCLAIMER, run_survey_audit
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = BASE_DIR / "app" / "static"
@@ -87,16 +91,27 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
         # API Endpoints
         if path == "/api/health":
             meta_client = MetaModelClient()
+            mode_name = (
+                "live"
+                if meta_client.is_live
+                else "Offline replay (pre-recorded)"
+            )
             self._send_json(
                 {
                     "status": "healthy",
+                    "mode": mode_name,
                     "live_meta_api": meta_client.is_live,
                     "model": meta_client.model,
                     "base_url": meta_client.base_url,
                     "satellite_model": "sam-3.1",
                     "event": "Meta Global AI Developer Hackathon (Oct 26 - Nov 4, 2026)",
+                    "disclaimer": LEGAL_DISCLAIMER,
                 }
             )
+            return
+
+        if path == "/api/layers":
+            self._send_json(get_layer_metadata())
             return
 
         if path == "/api/examples":
@@ -132,7 +147,6 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
             scenario_id = path.replace("/api/examples/", "")
             target_json = EXAMPLES_DIR / f"{scenario_id}.json"
             if not target_json.exists():
-                # Try matching by prefix
                 matches = list(EXAMPLES_DIR.glob(f"*{scenario_id}*.json"))
                 if matches:
                     target_json = matches[0]
@@ -163,7 +177,6 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
                 )
                 return
 
-            # Extract fields
             preset_hint = payload.get("preset_hint")
             plan_b64 = payload.get("plan_image_b64")
             sat_b64 = payload.get("satellite_image_b64")
@@ -214,7 +227,7 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
                 )
             return
 
-        if path == "/api/advisor":
+        if path == "/api/screen-reserves":
             content_length = int(self.headers.get("Content-Length", 0))
             body_bytes = self.rfile.read(content_length)
             try:
@@ -226,46 +239,21 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
                 return
 
             raw_coords = payload.get("coords", [])
-            asking_price = payload.get("asking_price_kes")
+            riparian_buffer_m = float(payload.get("riparian_buffer_m", 30.0))
             coords: list[tuple[float, float]] = []
             for pt in raw_coords:
                 if isinstance(pt, (list, tuple)) and len(pt) >= 2:
                     coords.append((float(pt[0]), float(pt[1])))
 
-            try:
-                adv = evaluate_land_parcel(
-                    coords=coords,
-                    asking_price_kes=float(asking_price) if asking_price else None,
-                )
-                self._send_json(
-                    {
-                        "county": adv.county,
-                        "locality": adv.locality,
-                        "centroid": [adv.centroid_lon, adv.centroid_lat],
-                        "perimeter_m": adv.perimeter_m,
-                        "area_m2": adv.area_m2,
-                        "area_ha": adv.area_ha,
-                        "area_acres": adv.area_acres,
-                        "typical_zoning": adv.typical_zoning,
-                        "is_inside_kenya": adv.is_inside_kenya,
-                        "is_safe_residential": adv.is_safe_residential,
-                        "reserve_conflicts": adv.reserve_conflicts,
-                        "valuation_kes_min": adv.valuation_kes_min,
-                        "valuation_kes_mid": adv.valuation_kes_mid,
-                        "valuation_kes_max": adv.valuation_kes_max,
-                        "price_per_acre_kes": adv.price_per_acre_kes,
-                        "price_per_m2_kes": adv.price_per_m2_kes,
-                        "decision_verdict": adv.decision_verdict,
-                        "decision_summary": adv.decision_summary,
-                        "ai_advisory_text": adv.ai_advisory_text,
-                        "due_diligence_steps": adv.due_diligence_steps,
-                    }
-                )
-            except Exception as exc:
-                self._send_json(
-                    {"error": f"Advisory evaluation failed: {exc}"},
-                    status=HTTPStatus.INTERNAL_SERVER_ERROR,
-                )
+            conflicts = screen_reserves_pure(coords, riparian_buffer_m=riparian_buffer_m)
+            self._send_json(
+                {
+                    "conflicts": conflicts,
+                    "count": len(conflicts),
+                    "riparian_buffer_m": riparian_buffer_m,
+                    "disclaimer": LEGAL_DISCLAIMER,
+                }
+            )
             return
 
         if path == "/api/test-meta":
@@ -280,70 +268,14 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
             base_url = payload.get("base_url") or os.environ.get("MODEL_BASE_URL", "").strip()
             model = payload.get("model") or os.environ.get("MODEL_NAME", "").strip()
 
-            if not api_key:
-                self._send_json(
-                    {
-                        "status": "demo_mode",
-                        "connected": False,
-                        "message": (
-                            "No MODEL_API_KEY set. Running in high-fidelity demo mode "
-                            "with deterministic model emulation."
-                        ),
-                        "model": model or "muse-spark-1.3",
-                    }
-                )
-                return
-
             client = MetaModelClient(
-                api_key=api_key,
+                api_key=api_key or None,
                 base_url=base_url or None,
                 model=model or None,
             )
-            start_t = time.time()
-            try:
-                out_text = client.call_chat_completion(
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": (
-                                "ArdhiCheck system ping. Respond with 'Online - Meta Model Ready'."
-                            ),
-                        }
-                    ]
-                )
-                latency_ms = int((time.time() - start_t) * 1000)
-                if out_text:
-                    self._send_json(
-                        {
-                            "status": "live",
-                            "connected": True,
-                            "model": client.model,
-                            "base_url": client.base_url,
-                            "latency_ms": latency_ms,
-                            "response_sample": out_text[:120].strip(),
-                            "message": (
-                                f"Connected to {client.model} at {client.base_url}!"
-                            ),
-                        }
-                    )
-                else:
-                    self._send_json(
-                        {
-                            "status": "error",
-                            "connected": False,
-                            "message": f"Model returned empty response from {client.base_url}",
-                        },
-                        status=HTTPStatus.BAD_GATEWAY,
-                    )
-            except Exception as exc:
-                self._send_json(
-                    {
-                        "status": "connection_failed",
-                        "connected": False,
-                        "message": f"Could not connect to {client.base_url}: {exc}",
-                    },
-                    status=HTTPStatus.GATEWAY_TIMEOUT,
-                )
+            result = client.test_connection()
+            status_code = HTTPStatus.OK if result.get("connected") else HTTPStatus.OK
+            self._send_json(result, status=status_code)
             return
 
         if path == "/api/set-key":
@@ -382,7 +314,7 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
                     {
                         "status": "ok",
                         "message": (
-                            f"Model configuration saved! Active: {new_model or 'muse-spark-1.3'}"
+                            f"Model configuration updated! Active: {new_model or 'muse-spark-1.3'}"
                         ),
                         "model": new_model or "muse-spark-1.3",
                     }

@@ -1,10 +1,16 @@
 """Tests for the end-to-end ArdhiCheck pipeline."""
 
+from unittest.mock import MagicMock
+
+from app.meta.client import (
+    PlanExtractionResult,
+    SatelliteAnalysisResult,
+)
 from app.pipeline import run_survey_audit
 
 
 class TestPipelineScenarios:
-    """Verify that all 4 primary user scenarios yield expected verdicts."""
+    """Verify that all primary user scenarios yield expected verdicts and provenance."""
 
     def test_scenario_1_clean_gives_green(self):
         result = run_survey_audit(preset_hint="scenario_1")
@@ -13,9 +19,17 @@ class TestPipelineScenarios:
         assert result["area"]["within_tolerance"] is True
         assert result["satellite"]["overlap_area_m2"] == 0.0
         assert "VERIFIED (GREEN)" in result["advisory_report"]
-        assert "land_advisory" in result
-        assert result["land_advisory"]["county"] != ""
-        assert result["land_advisory"]["valuation_kes_mid"] > 0
+        # Valuation must be completely removed
+        assert "land_advisory" not in result
+        # Check provenance
+        assert "provenance" in result
+        prov = result["provenance"]
+        assert prov["extraction"]["source"] == "Offline replay (pre-recorded)"
+        assert prov["extraction"]["model_name"] == "not run"
+        assert prov["geometry"]["source"] == "app.geo (pure Python, 0 tokens)"
+        assert prov["satellite"]["status"] == "not run"
+        assert "disclaimer" in result
+        assert "Not legal advice" in result["disclaimer"]
 
     def test_scenario_2_transposed_bearing_gives_amber_with_fix(self):
         result = run_survey_audit(preset_hint="scenario_2")
@@ -28,12 +42,69 @@ class TestPipelineScenarios:
         assert "090" in top_fix["corrected_value"]
         assert "AMBER" in result["advisory_report"]
 
-    def test_scenario_3_riparian_overlap_gives_red(self):
+    def test_scenario_3_offline_reports_not_run(self):
+        # Offline replay: zero fabricated encroachment numbers
         result = run_survey_audit(preset_hint="scenario_3")
-        assert result["verdict"] == "RED"
-        assert result["satellite"]["has_riparian_zone"] is True
-        assert result["satellite"]["overlap_area_m2"] > 0.0
-        assert "riparian" in result["verdict_reason"].lower()
+        assert result["satellite"]["status"] == "not run"
+        assert result["satellite"]["overlap_area_m2"] == 0.0
+        assert result["provenance"]["satellite"]["model_name"] == "not run"
+
+    def test_scenario_3_with_live_sam_encroachment_gives_red(self):
+        # When live SAM 3.1 detects encroachment
+        mock_client = MagicMock()
+        mock_client.is_live = True
+        mock_client.model = "muse-spark-1.3"
+
+        mock_client.extract_plan_from_image.return_value = PlanExtractionResult(
+            lr_number="L.R. 11942/8",
+            district="Kiambu",
+            locality="Ruaka",
+            stated_area=0.5,
+            stated_unit="ha",
+            datum_name="arc1960_utm37s",
+            legs=[
+                ("000°00'00\"", "100.000"),
+                ("090°00'00\"", "50.000"),
+                ("180°00'00\"", "100.000"),
+                ("270°00'00\"", "50.000"),
+            ],
+            source="muse-spark-1.3 (live)",
+            model_name="muse-spark-1.3",
+            request_id="req_live_123",
+            latency_ms=120,
+            tokens_used=45,
+        )
+        mock_client.segment_satellite_features.return_value = SatelliteAnalysisResult(
+            has_riparian_zone=True,
+            riparian_buffer_m=30.0,
+            has_road_reserve=False,
+            road_buffer_m=0.0,
+            detected_features=["Nairobi River riparian reserve"],
+            overlap_area_m2=240.0,
+            source="sam-3.1 (live)",
+            model_name="sam-3.1",
+            request_id="sam_live_456",
+            latency_ms=350,
+            tokens_used=12,
+            status="live",
+        )
+        mock_client.synthesize_advisory_report.return_value = (
+            "Encroachment detected in riparian corridor.",
+            {
+                "source": "muse-spark-1.3 (live)",
+                "model_name": "muse-spark-1.3",
+                "request_id": "rep_live_789",
+                "latency_ms": 200,
+                "tokens_used": 60,
+            },
+        )
+
+        res = run_survey_audit(preset_hint="scenario_3", meta_client=mock_client)
+        assert res["verdict"] == "RED"
+        assert "riparian" in res["verdict_reason"].lower()
+        assert res["provenance"]["satellite"]["status"] == "live"
+        assert res["provenance"]["satellite"]["model_name"] == "sam-3.1"
+        assert res["satellite"]["overlap_area_m2"] == 240.0
 
     def test_scenario_4_area_deficit_gives_red(self):
         result = run_survey_audit(preset_hint="scenario_4")
@@ -56,3 +127,4 @@ class TestPipelineScenarios:
         )
         assert result["verdict"] == "GREEN"
         assert result["area"]["computed_m2"] == 2500.0
+        assert result["provenance"]["extraction"]["source"] == "Manual User Entry"
