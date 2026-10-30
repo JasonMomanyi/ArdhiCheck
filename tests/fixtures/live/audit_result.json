@@ -1,0 +1,202 @@
+{
+  "verdict": "GREEN",
+  "verdict_reason": "Traverse closes with precision 1:inf. Area matches stated within 0.00%. Zero buffer overlap.",
+  "lr_number": "L.R. 209/14682",
+  "closure": {
+    "misclosure_e": 1.4210854715202004e-14,
+    "misclosure_n": -9.184850993605149e-15,
+    "linear_misclosure": 1.69206938247611e-14,
+    "perimeter": 300.0,
+    "relative_precision": "1:inf",
+    "tolerance_m": 0.3
+  },
+  "area": {
+    "stated_m2": 5000.0,
+    "computed_m2": 5000.0,
+    "difference_m2": 0.0,
+    "difference_pct": 0.0,
+    "within_tolerance": true
+  },
+  "satellite": {
+    "has_riparian_zone": false,
+    "riparian_buffer_m": 0.0,
+    "overlap_area_m2": 0.0,
+    "detected_features": [
+      "No satellite image provided"
+    ],
+    "source": "not run",
+    "status": "not run"
+  },
+  "candidate_fixes": [],
+  "datum": {
+    "crs_name": "arc1960_utm37s",
+    "uncertainty_note": "Arc 1960 to WGS84 datum transformations are accurate to approximately \u00b15 metres depending on the transformation parameters available. Do not treat these coordinates as survey-grade."
+  },
+  "advisory_report": "**ArdhiCheck \u2013 Independent Survey Audit: L.R. 209/14682**\n\n**1. Executive Verdict: Pass**\nThe parcel L.R. 209/14682 returns a Traffic Light Verdict: GREEN. This indicates the deed plan geometry is mathematically closed and internally consistent with no adjustments required. Candidate Fixes: 0 found confirms no beacon correction was needed to achieve closure.\n\n**2. Mathematical Findings**\nThe audit computed Linear Misclosure: 0.0000 m with Relative Precision: 1:inf, indicating perfect closure of the traverse. The area check shows Stated Area: 5000.0 m\u00b2 vs Computed 5000.0 m\u00b2, a variance of 0.0 m\u00b2 (0.00%). There is zero mathematical evidence of dimensional tampering, beacon shift, or area misrepresentation in the supplied coordinates.\n\n**3. Three Specific Questions to ask the Licensed Surveyor or Seller**\nDespite a clean mathematical pass, arithmetic does not confirm ground truth or legal title. Ask: 1) Can you provide the original Licensed Surveyor's signed mutation / deed plan for L.R. 209/14682 for RIM comparison to confirm these exact beacons are registered? 2) Has a recent ground re-establishment confirmed all beacons are physically present, undisturbed, and unencroached? 3) Does the current Land Search at Ardhi House confirm the seller named is the registered proprietor, with no charge, caveat, or succession dispute affecting this 5000.0 m\u00b2 parcel?\n\n\n---\n**Disclaimer**: Not legal advice. Not affiliated with the Ministry of Lands or Ardhisasa.",
+  "disclaimer": "Not legal advice. Not affiliated with the Ministry of Lands or Ardhisasa.",
+  "provenance": {
+    "extraction": {
+      "source": "muse-spark-1.3 (cached)",
+      "model_name": "muse-spark-1.3",
+      "request_id": "resp_6ae5126766f654d1b93b4cf1",
+      "latency_ms": 1,
+      "tokens_used": 1550
+    },
+    "geometry": {
+      "source": "app.geo (pure Python, 0 tokens)",
+      "model_name": "none",
+      "request_id": "pure_python_local",
+      "latency_ms": 930,
+      "tokens_used": 0
+    },
+    "satellite": {
+      "source": "not run",
+      "model_name": "not run",
+      "request_id": "not run",
+      "latency_ms": "not run",
+      "tokens_used": "not run",
+      "status": "not run"
+    },
+    "report": {
+      "source": "muse-spark-1.3 (cached)",
+      "model_name": "muse-spark-1.3",
+      "request_id": "resp_6ae5126d6232f1d45fde47be",
+      "latency_ms": 1,
+      "tokens_used": 0
+    }
+  },
+  "extraction_source": "muse-spark-1.3 (cached)",
+  "notes": [
+    "All boundary beacons found in situ (iron pins in concrete).",
+    "Survey carried out in accordance with Survey Act Cap 299.",
+    "Traverse closes with zero linear error."
+  ],
+  "raw_coords": [
+    [
+      257000.0,
+      9857000.0
+    ],
+    [
+      257000.0,
+      9857100.0
+    ],
+    [
+      257050.0,
+      9857100.0
+    ],
+    [
+      257050.0,
+      9857000.0
+    ],
+    [
+      257000.0,
+      9857000.0
+    ]
+  ],
+  "adjusted_coords": [
+    [
+      257000.0,
+      9857000.0
+    ],
+    [
+      257000.0,
+      9857100.0
+    ],
+    [
+      257050.0,
+      9857100.0
+    ],
+    [
+      257050.0,
+      9857000.0
+    ],
+    [
+      257000.0,
+      9857000.0
+    ]
+  ],
+  "wgs84_coords": [
+    [
+      36.81706937306882,
+      -1.295524332276427
+    ],
+    [
+      36.8170701453825,
+      -1.2946202659375563
+    ],
+    [
+      36.81751926871592,
+      -1.294620654420104
+    ],
+    [
+      36.81751849656082,
+      -1.295524721030918
+    ],
+    [
+      36.81706937306882,
+      -1.295524332276427
+    ]
+  ],
+  "geojson": {
+    "type": "Feature",
+    "properties": {
+      "lr_number": "L.R. 209/14682",
+      "verdict": "GREEN",
+      "stated_area": "0.5 ha",
+      "computed_m2": 5000.0
+    },
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            36.81706937306882,
+            -1.295524332276427
+          ],
+          [
+            36.8170701453825,
+            -1.2946202659375563
+          ],
+          [
+            36.81751926871592,
+            -1.294620654420104
+          ],
+          [
+            36.81751849656082,
+            -1.295524721030918
+          ],
+          [
+            36.81706937306882,
+            -1.295524332276427
+          ]
+        ]
+      ]
+    }
+  },
+  "legs": [
+    {
+      "index": 1,
+      "bearing_dms": "000\u00b000'00\"",
+      "bearing_deg": 0.0,
+      "distance_m": 100.0
+    },
+    {
+      "index": 2,
+      "bearing_dms": "090\u00b000'00\"",
+      "bearing_deg": 90.0,
+      "distance_m": 50.0
+    },
+    {
+      "index": 3,
+      "bearing_dms": "180\u00b000'00\"",
+      "bearing_deg": 180.0,
+      "distance_m": 100.0
+    },
+    {
+      "index": 4,
+      "bearing_dms": "270\u00b000'00\"",
+      "bearing_deg": 270.0,
+      "distance_m": 50.0
+    }
+  ]
+}

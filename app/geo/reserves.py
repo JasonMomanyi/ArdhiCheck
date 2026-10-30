@@ -217,3 +217,4 @@ def get_layer_metadata() -> list[dict[str, Any]]:
             "is_illustrative": True,
         },
     ]
+

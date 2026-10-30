@@ -14,6 +14,7 @@ from __future__ import annotations
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 
 def load_dotenv() -> None:
@@ -27,6 +28,21 @@ def load_dotenv() -> None:
                 k, v = k.strip(), v.strip().strip("\"'")
                 if k and k not in os.environ:
                     os.environ[k] = v
+
+
+def extract_output_text(data: dict[str, Any]) -> str:
+    """Extract visible response text from dev.meta.ai Responses API payload."""
+    if "output_text" in data and isinstance(data["output_text"], str):
+        return data["output_text"]
+    for block in data.get("output", []):
+        if block.get("type") == "message":
+            for content_item in block.get("content", []):
+                if content_item.get("type") == "output_text":
+                    return content_item.get("text", "")
+    choices = data.get("choices", [])
+    if choices and "message" in choices[0]:
+        return choices[0]["message"].get("content", "")
+    return ""
 
 
 def main() -> None:
@@ -56,6 +72,8 @@ def main() -> None:
     payload = {
         "model": model,
         "input": prompt,
+        "max_output_tokens": 2500,
+        "reasoning": {"effort": "minimal"},
     }
 
     try:
@@ -63,15 +81,16 @@ def main() -> None:
             f"{base_url}/responses",
             headers=headers,
             json=payload,
-            timeout=30.0,
+            timeout=40.0,
         )
         if resp.status_code == 200:
             data = resp.json()
-            out = data.get("output_text") or str(data)
+            out_text = extract_output_text(data)
             usage = data.get("usage", {})
             print(f"=== {model} – Text Spike (dev.meta.ai Responses API) ===")
             print(f"Base URL: {base_url}")
-            print(f"Output:   {out.strip()}")
+            print(f"Model:    {model}")
+            print(f"Output:   {out_text.strip()}")
             print(f"Usage:    {usage}")
             print("=========================================================")
         else:

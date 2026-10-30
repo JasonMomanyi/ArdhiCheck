@@ -5,6 +5,7 @@
 
 # Run artifacts
 runs/
+data/cache/
 
 # Python
 __pycache__/
