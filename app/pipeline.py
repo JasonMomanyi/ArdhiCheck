@@ -28,6 +28,7 @@ from app.geo.bearings import format_bearing, parse_bearing
 from app.geo.datum import transform_to_wgs84
 from app.geo.fixes import suggest_single_value_fixes
 from app.geo.traverse import Leg, bowditch_adjust, closure, compute_traverse
+from app.geo.valuation import estimate_land_valuation
 from app.meta.client import MetaModelClient
 
 LEGAL_DISCLAIMER = (
@@ -189,6 +190,9 @@ def run_survey_audit(
         parse_tabular_or_gis_data(document_text, filename) if document_text else None
     )
 
+    district = "Kenya"
+    locality = "Kenyan Land Registry"
+
     if parsed_doc:
         legs_as_text = parsed_doc["legs"]
         lr_number = manual_lr_number or parsed_doc["lr_number"]
@@ -230,6 +234,8 @@ def run_survey_audit(
             manual_stated_area if manual_stated_area is not None else extraction.stated_area
         )
         stated_unit = manual_stated_unit or extraction.stated_unit
+        district = getattr(extraction, "district", "Kenya")
+        locality = getattr(extraction, "locality", "Kenyan Cadastre")
         crs_name = crs_name or extraction.datum_name
         extraction_source = extraction.source
         notes = extraction.raw_notes
@@ -392,7 +398,15 @@ def run_survey_audit(
 
     advisory_report, report_prov = client.synthesize_advisory_report(audit_summary)
 
-    # Step 11: GeoJSON packaging for mapping
+    # Step 11: Indicative Valuation & Budget Advisory
+    val_estimate = estimate_land_valuation(
+        locality=locality,
+        district=district,
+        computed_m2=computed_m2,
+        stated_m2=area_comp.get("stated_m2", 0.0),
+    )
+
+    # Step 12: GeoJSON packaging for mapping
     geojson_polygon = {
         "type": "Feature",
         "properties": {
@@ -410,6 +424,7 @@ def run_survey_audit(
     return {
         **audit_summary,
         "advisory_report": advisory_report,
+        "valuation": val_estimate.to_dict(),
         "disclaimer": LEGAL_DISCLAIMER,
         "provenance": {
             "extraction": extraction_prov,

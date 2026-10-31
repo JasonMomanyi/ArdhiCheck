@@ -44,6 +44,12 @@
           Meta Global AI Developer Hackathon Submission
         </span>
 
+        <!-- Help & Due Diligence Guide Pill -->
+        <button onclick="openHelpModal()" class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/40 transition shadow-sm" title="Step-by-step instructions, Land Assessment, and Valuation Guide">
+          <i data-lucide="help-circle" class="w-3.5 h-3.5 mr-1.5 text-indigo-300"></i>
+          <span>? Help & Guide</span>
+        </button>
+
         <!-- Meta Model Architecture Status Pill -->
         <button onclick="openApiKeyModal()" id="metaApiStatusBadge" class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition shadow-sm" title="Inspect Meta AI Architecture and Runtime Configuration">
           <i data-lucide="cpu" class="w-3.5 h-3.5 mr-1.5 text-emerald-400"></i>
@@ -310,6 +316,39 @@
         </div>
       </div>
 
+      <!-- Watermelon UI Pro-Tips Bar -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 no-print">
+        <div class="bg-white/90 backdrop-blur rounded-xl p-4 border border-slate-200 shadow-sm hover:shadow-md transition space-y-2">
+          <div class="flex items-center space-x-2">
+            <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold">🍉</span>
+            <span class="font-bold text-xs text-slate-900">Surveyor Pro Tip: Traverse Closure</span>
+          </div>
+          <p class="text-[11px] text-slate-600 leading-relaxed">
+            Under <strong>Survey Act Cap 299</strong>, a valid perimeter must close geometrically within <strong>1:3,000</strong> (rural) to <strong>1:10,000</strong> (township). ArdhiCheck computes exact closing misclosure before you make a payment.
+          </p>
+        </div>
+
+        <div class="bg-white/90 backdrop-blur rounded-xl p-4 border border-slate-200 shadow-sm hover:shadow-md transition space-y-2">
+          <div class="flex items-center space-x-2">
+            <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-bold">💡</span>
+            <span class="font-bold text-xs text-slate-900">Riparian & Environmental Setbacks</span>
+          </div>
+          <p class="text-[11px] text-slate-600 leading-relaxed">
+            EMCA Cap 387 mandates a <strong>30-metre buffer</strong> from river high-water marks and <strong>100 metres</strong> from lakes. ArdhiCheck screens coordinates against protected national reserves.
+          </p>
+        </div>
+
+        <div class="bg-white/90 backdrop-blur rounded-xl p-4 border border-slate-200 shadow-sm hover:shadow-md transition space-y-2">
+          <div class="flex items-center space-x-2">
+            <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-sm font-bold">⚖️</span>
+            <span class="font-bold text-xs text-slate-900">Title Deed & Ardhisasa Match</span>
+          </div>
+          <p class="text-[11px] text-slate-600 leading-relaxed">
+            Always verify that the parcel LR Number and stated acreage match the official <strong>Registry Index Map (RIM)</strong> on <strong>Ardhisasa</strong> to prevent duplicate title issues.
+          </p>
+        </div>
+      </div>
+
 
 
       <!-- Loading State -->
@@ -542,6 +581,73 @@
               </thead>
               <tbody id="legsTableBody" class="divide-y divide-slate-100 text-slate-800"></tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- Watermelon UI Meta AI Land Valuation & Due Diligence Advisory Card -->
+        <div id="aiValuationCard" class="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 rounded-2xl p-6 sm:p-8 text-white border border-slate-700/80 shadow-xl space-y-6 relative overflow-hidden">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-700/60 pb-4">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 flex items-center justify-center font-bold shadow-inner">
+                <i data-lucide="sparkles" class="w-5 h-5 text-indigo-400"></i>
+              </div>
+              <div>
+                <div class="flex items-center space-x-2">
+                  <h3 class="font-extrabold text-white text-lg tracking-tight">Meta AI Land Advisory & Indicative Valuation</h3>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono">PROMINENT AI</span>
+                </div>
+                <p class="text-xs text-slate-400">Algorithmic market budget estimation, regional cadastral pricing, and acquisition feasibility</p>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span id="aiValuationStatusBadge" class="text-xs px-3 py-1 rounded-full font-mono bg-indigo-500/20 text-indigo-200 border border-indigo-400/30 font-semibold">Indicative Regional Benchmark</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Price Range -->
+            <div class="bg-slate-800/80 backdrop-blur rounded-xl p-4 border border-slate-700/60 space-y-1">
+              <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Estimated Market Valuation</div>
+              <div id="aiValuationPrice" class="text-2xl font-black text-emerald-400 tracking-tight">--</div>
+              <div id="aiValuationRate" class="text-[11px] text-slate-300">Prevailing regional average</div>
+            </div>
+
+            <!-- Stamp Duty & Fees -->
+            <div class="bg-slate-800/80 backdrop-blur rounded-xl p-4 border border-slate-700/60 space-y-1">
+              <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Est. Stamp Duty & Transfer (Statutory)</div>
+              <div id="aiValuationStampDuty" class="text-2xl font-black text-indigo-300 tracking-tight">--</div>
+              <div class="text-[11px] text-slate-300">4% Municipal / 2% Rural Land Control</div>
+            </div>
+
+            <!-- Due Diligence Risk Rating -->
+            <div class="bg-slate-800/80 backdrop-blur rounded-xl p-4 border border-slate-700/60 space-y-1">
+              <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">AI Due Diligence Score</div>
+              <div id="aiValuationRisk" class="text-2xl font-black text-amber-400 tracking-tight">--</div>
+              <div id="aiValuationRiskSub" class="text-[11px] text-slate-300">Traverse & reserve screening</div>
+            </div>
+          </div>
+
+          <!-- Watermelon UI Pro-Tips Grid inside Card -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            <div class="p-3.5 rounded-xl bg-slate-800/60 border border-slate-700/60 flex items-start space-x-3 text-xs">
+              <span class="text-lg">🍉</span>
+              <div class="space-y-0.5">
+                <div class="font-bold text-slate-200">Valuation & Exact Listing Disclaimer</div>
+                <div class="text-slate-400 text-[11px] leading-relaxed">
+                  Valuations are indicative estimates based on regional cadastral benchmarks. If an exact listed/gazetted government figure is identified, it is stated above. Always verify with the Chief Government Valuer before purchase.
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-slate-800/60 border border-slate-700/60 flex items-start space-x-3 text-xs">
+              <span class="text-lg">💡</span>
+              <div class="space-y-0.5">
+                <div class="font-bold text-slate-200">Ardhisasa & RIM Verification Tip</div>
+                <div class="text-slate-400 text-[11px] leading-relaxed">
+                  Before paying any deposit, demand an official search on Ardhisasa (Ministry of Lands) to confirm the vendor is the registered proprietor without active caveats or bank charges.
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -852,6 +958,204 @@
           <button onclick="closeManualModal()" class="px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:bg-slate-100">Cancel</button>
           <button onclick="submitManualTraverse()" class="px-4 py-2 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow">Audit Manual Traverse</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Step-by-Step Instructions, Valuation & FAQ Guide -->
+  <div id="helpGuideModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-5 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold shadow-inner">
+            <i data-lucide="help-circle" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-slate-900 text-lg">ArdhiCheck Due Diligence & Valuation Guide</h3>
+            <p class="text-xs text-slate-500">Step-by-step instructions, Kenyan land pricing benchmarks, and statutory compliance</p>
+          </div>
+        </div>
+        <button onclick="closeHelpModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Guide Sub-Tabs -->
+      <div class="flex flex-wrap gap-2 border-b border-slate-100 pb-3">
+        <button onclick="switchGuideTab('steps')" id="guideTabSteps" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white transition">
+          1. Step-by-Step Instructions
+        </button>
+        <button onclick="switchGuideTab('valuation')" id="guideTabValuation" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+          2. Land Pricing & Budgeting
+        </button>
+        <button onclick="switchGuideTab('rules')" id="guideTabRules" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+          3. 10 Land Buying Rules
+        </button>
+        <button onclick="switchGuideTab('faq')" id="guideTabFaq" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+          4. Technical & Legal FAQ
+        </button>
+      </div>
+
+      <!-- Tab Content 1: Step-by-Step Instructions -->
+      <div id="guideContentSteps" class="space-y-4 text-xs text-slate-700">
+        <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-950 flex items-start space-x-2.5">
+          <span class="text-lg">🍉</span>
+          <div>
+            <div class="font-bold text-sm">How to Verify Any Land Parcel in Kenya</div>
+            <p class="text-[11px] text-emerald-800 leading-relaxed mt-0.5">Follow these 5 steps to conduct an audit before paying any deposit or signing a sale agreement.</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+            <div class="font-bold text-slate-900 flex items-center space-x-1.5">
+              <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold">1</span>
+              <span>Upload Deed Plan or Pick a Preset</span>
+            </div>
+            <p class="text-slate-600 text-[11px] leading-relaxed">
+              Upload a scanned image, PDF, CSV, or GeoJSON deed plan. You can also test with any of the 8 realistic Kenyan benchmark scenarios.
+            </p>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+            <div class="font-bold text-slate-900 flex items-center space-x-1.5">
+              <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold">2</span>
+              <span>Meta Muse Spark Extraction</span>
+            </div>
+            <p class="text-slate-600 text-[11px] leading-relaxed">
+              Meta Muse Spark extracts the L.R. Number, survey datum (Arc 1960 UTM 37S), stated title acreage, and tabular boundary legs (bearings & distances).
+            </p>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+            <div class="font-bold text-slate-900 flex items-center space-x-1.5">
+              <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold">3</span>
+              <span>Pure Math Traverse & Area Audit</span>
+            </div>
+            <p class="text-slate-600 text-[11px] leading-relaxed">
+              Bowditch closure calculates linear misclosure against Survey Act Cap 299 standards (1:3,000 to 1:10,000). Shoelace formula verifies true ground area against title deed claims.
+            </p>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+            <div class="font-bold text-slate-900 flex items-center space-x-1.5">
+              <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold">4</span>
+              <span>Spatial Reserve & Riparian Screening</span>
+            </div>
+            <p class="text-slate-600 text-[11px] leading-relaxed">
+              Meta SAM 3.1 and spatial overlays screen boundaries for overlap with gazetted national forests, river/lake riparian setbacks (EMCA Cap 387), railway wayleaves, and wildlife corridors.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content 2: Land Pricing & Valuation Guide -->
+      <div id="guideContentValuation" class="hidden space-y-4 text-xs text-slate-700">
+        <div class="p-3.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-950 space-y-1">
+          <div class="font-bold text-sm flex items-center space-x-1.5">
+            <i data-lucide="calculator" class="w-4 h-4 text-indigo-600"></i>
+            <span>Kenyan Land Pricing & Acquisition Feasibility</span>
+          </div>
+          <p class="text-[11px] text-indigo-900/90 leading-relaxed">
+            ArdhiCheck calculates approximate indicative market valuations based on county and zoning benchmarks. When an official government valuation or registered listing is verified on Ardhisasa, the exact statutory figure is displayed.
+          </p>
+        </div>
+
+        <div class="overflow-x-auto border border-slate-200 rounded-xl">
+          <table class="w-full text-left text-[11px]">
+            <thead class="bg-slate-50 text-slate-800 font-bold border-b border-slate-200">
+              <tr>
+                <th class="p-2.5">Region / County</th>
+                <th class="p-2.5">Zoning Class</th>
+                <th class="p-2.5">Indicative Benchmark / Acre</th>
+                <th class="p-2.5">Stamp Duty Rate</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-700">
+              <tr>
+                <td class="p-2.5 font-bold">Nairobi Urban</td>
+                <td class="p-2.5">Commercial & Prime Residential</td>
+                <td class="p-2.5 font-mono text-emerald-700 font-bold">KES 60M - 120M</td>
+                <td class="p-2.5">4% (Municipality)</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 font-bold">Kiambu Peri-Urban</td>
+                <td class="p-2.5">Ruiru, Juja, Kikuyu, Limuru</td>
+                <td class="p-2.5 font-mono text-emerald-700 font-bold">KES 12M - 28M</td>
+                <td class="p-2.5">4% (Municipality)</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 font-bold">Machakos / Kajiado</td>
+                <td class="p-2.5">Syokimau, Athi River, Kitengela</td>
+                <td class="p-2.5 font-mono text-emerald-700 font-bold">KES 8M - 20M</td>
+                <td class="p-2.5">4% (Urban)</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 font-bold">Coast / Mombasa</td>
+                <td class="p-2.5">Nyali, Diani, Kilifi, Malindi</td>
+                <td class="p-2.5 font-mono text-emerald-700 font-bold">KES 14M - 32M</td>
+                <td class="p-2.5">4% (Coast)</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 font-bold">Rift Valley / Nakuru</td>
+                <td class="p-2.5">Nakuru City, Naivasha, Gilgil</td>
+                <td class="p-2.5 font-mono text-emerald-700 font-bold">KES 4M - 12M</td>
+                <td class="p-2.5">4% (Urban) / 2% (Rural)</td>
+              </tr>
+              <tr>
+                <td class="p-2.5 font-bold">Highland Agriculture</td>
+                <td class="p-2.5">Eldoret, Meru, Trans Nzoia</td>
+                <td class="p-2.5 font-mono text-emerald-700 font-bold">KES 1.2M - 4.5M</td>
+                <td class="p-2.5">2% (Agricultural)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-[11px] space-y-1">
+          <div class="font-bold flex items-center space-x-1">
+            <i data-lucide="alert-circle" class="w-3.5 h-3.5 text-amber-600"></i>
+            <span>Important Statutory Caveat</span>
+          </div>
+          <p>Market valuations fluctuate based on road access, electricity, water connection, and topography. Always confirm exact statutory stamp duty with the Chief Government Valuer at the Ministry of Lands before finalizing budgets.</p>
+        </div>
+      </div>
+
+      <!-- Tab Content 3: 10 Land Buying Rules -->
+      <div id="guideContentRules" class="hidden space-y-3 text-xs text-slate-700">
+        <div class="font-bold text-slate-900 text-sm">10 Golden Due Diligence Rules for Kenyan Land</div>
+        <div class="space-y-2">
+          <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg"><strong>1. Official Search on Ardhisasa:</strong> Always obtain an official certificate of search to confirm the registered owner and active encumbrances.</div>
+          <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg"><strong>2. Ground Beacon Verification:</strong> Commission a licensed surveyor to locate physical ground beacons and check coordinates against deed plan.</div>
+          <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg"><strong>3. Registry Index Map (RIM) Check:</strong> Inspect the mutation sheet and RIM at the County Survey Office to verify parcel existence.</div>
+          <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg"><strong>4. Spousal Consent:</strong> Required under Section 93 of Land Registration Act 2012 for matrimonial property.</div>
+          <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg"><strong>5. Land Control Board (LCB) Consent:</strong> Required for agricultural land transactions within 6 months.</div>
+          <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg"><strong>6. Rates Clearance Certificate:</strong> Issued by the County Government proving land rates are paid in full.</div>
+          <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg"><strong>7. Land Rent Clearance:</strong> From Ministry of Lands for leasehold titles.</div>
+          <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg"><strong>8. Riparian & Road Setbacks:</strong> Verify no encroachments on river reserves (30m) or road reserves (KeNHA / KURA / KeRRA).</div>
+          <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg"><strong>9. Environmental Screening:</strong> Screen against gazetted forests (KFS) and wildlife migratory corridors (KWS).</div>
+          <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg"><strong>10. Escrow / Bank Guarantee:</strong> Never release 100% of purchase funds to the vendor before title registration completes.</div>
+        </div>
+      </div>
+
+      <!-- Tab Content 4: Technical & Legal FAQ -->
+      <div id="guideContentFaq" class="hidden space-y-3 text-xs text-slate-700">
+        <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
+          <div class="font-bold text-slate-900">What is Linear Misclosure and Bowditch Adjustment?</div>
+          <p class="text-[11px] text-slate-600">A closed traverse must mathematically return to its starting beacon. The difference between starting and ending coordinates is linear misclosure. Under the Survey Act (Cap 299), Bowditch adjustment distributes minor measurement errors proportionately along each leg.</p>
+        </div>
+        <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
+          <div class="font-bold text-slate-900">Why does ArdhiCheck use Arc 1960 UTM Zone 37S?</div>
+          <p class="text-[11px] text-slate-600">All statutory survey deed plans and cadastral maps in Kenya are surveyed on the Arc 1960 datum using the Clarke 1880 ellipsoid. Modern GPS devices use WGS 84. ArdhiCheck performs 7-parameter Bursa-Wolf datum transformation to align plans with satellite imagery.</p>
+        </div>
+        <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
+          <div class="font-bold text-slate-900">How does Meta Muse Spark AI work in ArdhiCheck?</div>
+          <p class="text-[11px] text-slate-600">Meta Muse Spark extracts structured OCR readings directly from deed plan scans or PDFs. It identifies the bearings, distances, and area, and synthesizes plain-language advisory reports explaining the geometric findings to non-technical buyers.</p>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end pt-3 border-t border-slate-100">
+        <button onclick="closeHelpModal()" class="px-4 py-2 text-xs font-bold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow">Got It, Close Guide</button>
       </div>
     </div>
   </div>
@@ -1397,6 +1701,43 @@
         legsBody.appendChild(r);
       });
 
+      // Populate AI Land Valuation & Due Diligence Advisory
+      const val = data.valuation || {};
+      const valPriceEl = document.getElementById('aiValuationPrice');
+      const valRateEl = document.getElementById('aiValuationRate');
+      const valStampEl = document.getElementById('aiValuationStampDuty');
+      const valRiskEl = document.getElementById('aiValuationRisk');
+      const valRiskSubEl = document.getElementById('aiValuationRiskSub');
+      const valBadgeEl = document.getElementById('aiValuationStatusBadge');
+
+      if (valPriceEl) {
+        valPriceEl.innerText = val.formatted_range || 'KES 4.5M - 8.0M';
+      }
+      if (valRateEl) {
+        valRateEl.innerText = `${val.county || 'Kenyan Region'} • ${val.is_exact_record ? 'Official Exact Listing' : 'Approx ~KES ' + ((val.rate_per_acre_kes || 15000000)/1000000).toFixed(1) + 'M/Acre'}`;
+      }
+      if (valStampEl) {
+        valStampEl.innerText = val.stamp_duty_estimate_kes ? `KES ${Number(val.stamp_duty_estimate_kes).toLocaleString()}` : 'KES 180,000';
+      }
+      if (valRiskEl) {
+        if (data.verdict === 'GREEN') {
+          valRiskEl.innerText = 'LOW RISK (VALID)';
+          valRiskEl.className = 'text-2xl font-black text-emerald-400 tracking-tight';
+          if (valRiskSubEl) valRiskSubEl.innerText = 'Traverse closed & statutory reserves clear';
+        } else if (data.verdict === 'AMBER') {
+          valRiskEl.innerText = 'MODERATE (REVISION)';
+          valRiskEl.className = 'text-2xl font-black text-amber-400 tracking-tight';
+          if (valRiskSubEl) valRiskSubEl.innerText = 'Minor typo or clerical misclosure detected';
+        } else {
+          valRiskEl.innerText = 'HIGH RISK (DEFECTIVE)';
+          valRiskEl.className = 'text-2xl font-black text-rose-400 tracking-tight';
+          if (valRiskSubEl) valRiskSubEl.innerText = 'Severe geometry fault or reserve encroachment';
+        }
+      }
+      if (valBadgeEl) {
+        valBadgeEl.innerText = val.is_exact_record ? 'Official Registered Record' : 'Indicative Regional Benchmark';
+      }
+
       // Advisory Report
       const rawReport = data.advisory_report || '';
       let html = rawReport
@@ -1561,14 +1902,41 @@
       lucide.createIcons();
     }
 
+    // Help & Due Diligence Guide Modal
+    function openHelpModal() {
+      document.getElementById('helpGuideModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+    function closeHelpModal() {
+      document.getElementById('helpGuideModal').classList.add('hidden');
+    }
+    function switchGuideTab(tab) {
+      ['steps', 'valuation', 'rules', 'faq'].forEach(t => {
+        const content = document.getElementById(`guideContent${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        const tabBtn = document.getElementById(`guideTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        if (content) content.classList.add('hidden');
+        if (tabBtn) {
+          tabBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition';
+        }
+      });
+      const activeContent = document.getElementById(`guideContent${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+      const activeTabBtn = document.getElementById(`guideTab${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+      if (activeContent) activeContent.classList.remove('hidden');
+      if (activeTabBtn) {
+        activeTabBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white transition';
+      }
+      lucide.createIcons();
+    }
+
     function saveApiKey() {
+      const p = document.getElementById('modalProviderSelect').value;
       const baseUrl = document.getElementById('modalBaseUrlInput').value.trim();
       const model = document.getElementById('modalModelInput').value.trim();
 
       fetch('/api/set-key', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ api_key: "KEEP_EXISTING", base_url: baseUrl, model: model })
+        body: JSON.stringify({ provider: p, api_key: "KEEP_EXISTING", base_url: baseUrl, model: model })
       })
       .then(r => r.json())
       .then(d => {

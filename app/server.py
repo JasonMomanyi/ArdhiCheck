@@ -307,12 +307,39 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
                 )
                 return
 
+            provider = payload.get("provider", "").strip()
             new_key = payload.get("api_key", "").strip()
             new_base_url = payload.get("base_url", "").strip()
             new_model = payload.get("model", "").strip()
 
+            if provider == "fireworks_spark_open":
+                new_key = (
+                    new_key
+                    if (new_key and new_key != "KEEP_EXISTING")
+                    else "fw_HZWX8hKB7DMA9paYhonSf3"
+                )
+                new_base_url = "https://api.fireworks.ai/inference/v1"
+                new_model = "accounts/fireworks/models/muse-spark-open"
+            elif provider == "baseten_spark_open":
+                new_key = (
+                    new_key
+                    if (new_key and new_key != "KEEP_EXISTING")
+                    else "Lj9GxCZP.SGorOSXfEujGJPrcn2z1GFDxKPS7pbmC"
+                )
+                new_base_url = "https://inference.baseten.co/v1"
+                new_model = "meta-models/muse-spark-open"
+            elif provider == "meta_official":
+                new_base_url = "https://api.meta.ai/v1"
+                new_model = "muse-spark-1.3"
+            elif provider == "offline_replay":
+                new_key = ""
+                new_base_url = "https://api.meta.ai/v1"
+                new_model = "muse-spark-1.3"
+
             if new_key and new_key != "KEEP_EXISTING":
                 os.environ["MODEL_API_KEY"] = new_key
+            elif provider == "offline_replay":
+                os.environ["MODEL_API_KEY"] = ""
             if new_base_url:
                 os.environ["MODEL_BASE_URL"] = new_base_url
             if new_model:
