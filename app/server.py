@@ -393,5 +393,13 @@ def run_server(port: int = 8000, host: str = "127.0.0.1") -> None:
 
 
 if __name__ == "__main__":
-    port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
+    port = 8000
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "--port" and len(sys.argv) > 2:
+            port = int(sys.argv[2])
+        else:
+            try:
+                port = int(sys.argv[1])
+            except ValueError:
+                port = 8000
     run_server(port=port)
