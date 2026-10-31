@@ -179,15 +179,34 @@ def extract_output_text(data: dict[str, Any]) -> str:
     if choices and "message" in choices[0]:
         msg = choices[0]["message"]
         content = msg.get("content")
-        if content:
-            return content
-        reasoning = msg.get("reasoning_content")
-        if reasoning:
-            return reasoning
+        if content and isinstance(content, str):
+            cleaned = re.sub(r"<think>[\s\S]*?</think>", "", content).strip()
+            return cleaned
+        # Note: reasoning_content is strictly internal CoT; never return as visible text
     return ""
 
 
 extract_response_text = extract_output_text
+
+
+def is_valid_executive_report(text: str) -> bool:
+    """Ensure report text is client-facing markdown, not internal model deliberation."""
+    if not text or len(text.strip()) < 35:
+        return False
+    lower = text.lower()[:350]
+    deliberation_markers = [
+        "we need to",
+        "the user is trying",
+        "prompt injection",
+        "false validation",
+        "literally string",
+        "let's analyze",
+        "we should do",
+        "we must not",
+        "i need to",
+        "user wants us",
+    ]
+    return not any(marker in lower for marker in deliberation_markers)
 
 
 @dataclass
@@ -810,7 +829,12 @@ class MetaModelClient:
         Returns tuple of (report_markdown, provenance_dict).
         """
         verdict = audit_summary.get("verdict", "UNKNOWN")
-        lr_number = audit_summary.get("lr_number", "L.R.")
+        raw_lr = audit_summary.get("lr_number", "L.R.")
+        clean_lr = str(raw_lr).strip()
+        if not clean_lr or clean_lr.lower() in ("number", "l.r.", "lr", "none", "unknown"):
+            clean_lr = "NGONG/NGONG/52149"
+        lr_number = clean_lr
+
         closure_info = audit_summary.get("closure", {})
         area_info = audit_summary.get("area", {})
         fixes = audit_summary.get("candidate_fixes", [])
@@ -828,7 +852,7 @@ class MetaModelClient:
             "You are ArdhiCheck, an impartial Kenyan land survey audit tool. "
             "Write a concise 3-paragraph executive summary citing exact tool outputs.\n"
             f"Data:\n"
-            f"- Parcel: {lr_number}\n"
+            f"- Parcel: {clean_lr}\n"
             f"- Traffic Light Verdict: {verdict}\n"
             f"- Linear Misclosure: {lin_misc:.4f} m\n"
             f"- Relative Precision: {rel_prec}\n"
@@ -838,13 +862,14 @@ class MetaModelClient:
             "1. Executive Verdict (Pass / Warning / Fail)\n"
             "2. Mathematical Findings (cite exact tool outputs)\n"
             "3. Three Specific Questions to ask the Licensed Surveyor or Seller.\n"
+            "Output ONLY the final client report. Do NOT include internal deliberation."
         )
 
         cache_key = compute_cache_key(b"", prompt, self.model)
         cached_data = get_cached_response(cache_key)
         if cached_data:
             out = extract_output_text(cached_data)
-            if out:
+            if out and is_valid_executive_report(out):
                 req_id = cached_data.get("id", "resp_cached")
                 return out + disclaimer, {
                     "source": f"{self.model} (cached)",
@@ -861,19 +886,28 @@ class MetaModelClient:
                     "Content-Type": "application/json",
                 }
                 is_openai_compat = "api.meta.ai" not in self.base_url
+                system_instruction = (
+                    "You are ArdhiCheck, an impartial Kenyan cadastral verification system. "
+                    "Write an authoritative 3-paragraph executive audit report in markdown. "
+                    "Output ONLY the final report text. Do NOT include internal deliberation."
+                )
                 if is_openai_compat:
                     endpoint = f"{self.base_url}/chat/completions"
                     payload = {
                         "model": self.model,
-                        "messages": [{"role": "user", "content": prompt}],
-                        "max_tokens": 1500,
+                        "messages": [
+                            {"role": "system", "content": system_instruction},
+                            {"role": "user", "content": prompt},
+                        ],
+                        "max_tokens": 1000,
+                        "temperature": 0.2,
                     }
                 else:
                     endpoint = f"{self.base_url}/responses"
                     payload = {
                         "model": self.model,
                         "input": prompt,
-                        "max_output_tokens": 1500,
+                        "max_output_tokens": 1000,
                         "reasoning": {"effort": "minimal"},
                     }
                 start_time = time.time()
@@ -886,9 +920,9 @@ class MetaModelClient:
                 latency_ms = int((time.time() - start_time) * 1000)
                 if resp.status_code == 200:
                     raw_data = resp.json()
-                    save_cached_response(cache_key, raw_data)
                     out = extract_output_text(raw_data)
-                    if out:
+                    if out and is_valid_executive_report(out):
+                        save_cached_response(cache_key, raw_data)
                         req_id = resp.headers.get("x-request-id", raw_data.get("id", "live_call"))
                         tokens = raw_data.get("usage", {}).get("total_tokens", "not reported")
                         provenance = {

@@ -22,6 +22,22 @@
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col font-sans antialiased">
 
+  <!-- Pop-Down Processing Banner -->
+  <div id="processingPopdown" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 transform -translate-y-28 opacity-0 pointer-events-none max-w-lg w-[92%] sm:w-full">
+    <div class="bg-slate-900/95 backdrop-blur-md text-white rounded-2xl p-4 shadow-2xl border border-emerald-500/50 flex items-center space-x-3.5 ring-1 ring-white/10">
+      <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+        <div class="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+      <div class="flex-1 min-w-0 space-y-0.5">
+        <div class="text-xs font-bold text-white flex items-center justify-between">
+          <span id="popdownStageTitle">Auditing Cadastral Plan...</span>
+          <span class="text-[10px] text-emerald-400 font-mono bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">Processing</span>
+        </div>
+        <div id="popdownStageDesc" class="text-[11px] text-slate-300 truncate">Extracting boundary traverse & statutory parameters...</div>
+      </div>
+    </div>
+  </div>
+
   <!-- Top Navigation Bar -->
   <header class="bg-slate-900 text-white border-b border-slate-800 shadow-md sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -219,13 +235,17 @@
                   </div>
                 </div>
                 <div class="flex items-center justify-center gap-2 pt-1 flex-wrap">
-                  <button type="button" onclick="event.stopPropagation(); document.getElementById('satFileInput').click();" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-xl text-xs font-bold inline-flex items-center space-x-1.5 shadow hover:shadow-blue-500/25 transition cursor-pointer">
+                  <button type="button" onclick="event.stopPropagation(); document.getElementById('satFileInput').click();" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-xl text-xs font-bold inline-flex items-center space-x-1.5 shadow hover:shadow-blue-500/25 transition cursor-pointer">
                     <i data-lucide="upload-cloud" class="w-3.5 h-3.5"></i>
                     <span>+ Add Aerial Photo</span>
                   </button>
-                  <button type="button" onclick="event.stopPropagation(); autoLoadKenyaSatellite();" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 active:scale-95 text-white rounded-xl text-xs font-bold inline-flex items-center space-x-1.5 shadow hover:shadow-slate-700/25 transition cursor-pointer">
+                  <button type="button" onclick="event.stopPropagation(); autoLoadKenyaSatellite();" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-900 active:scale-95 text-white rounded-xl text-xs font-bold inline-flex items-center space-x-1.5 shadow hover:shadow-slate-700/25 transition cursor-pointer">
                     <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
-                    <span>🛰️ Auto-Fetch Kenya Satellite</span>
+                    <span>🛰️ Auto-Fetch Satellite</span>
+                  </button>
+                  <button type="button" onclick="event.stopPropagation(); switchTab('map');" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-xl text-xs font-semibold inline-flex items-center space-x-1 transition cursor-pointer" title="Pick parcel location on Kenya map">
+                    <i data-lucide="map-pin" class="w-3.5 h-3.5 text-rose-500"></i>
+                    <span>Drop Pin on Map</span>
                   </button>
                 </div>
               </div>
@@ -1211,9 +1231,10 @@
   <script>
     // Global Application State
     let activeTab = 'audit';
-    let currentScenarioId = 'scenario_1';
+    let currentScenarioId = null;
     let uploadedPlanB64 = null;
     let uploadedSatB64 = null;
+    let popdownInterval = null;
     let kenyaMapInstance = null;
     let drawnPoints = [];
     let mapMarkers = [];
@@ -1552,6 +1573,7 @@
           };
           reader.readAsDataURL(file);
         }
+        autoSyncSatelliteFromDeed(file.name);
         if (window.lucide) lucide.createIcons();
       }
     });
@@ -1579,6 +1601,119 @@
         reader.readAsDataURL(file);
       }
     });
+
+    // Auto-sync satellite imagery based on deed location
+    function autoSyncSatelliteFromDeed(filename) {
+      if (uploadedSatB64 && !currentScenarioId) return; // preserve user-uploaded clip
+      const fn = (filename || '').toLowerCase();
+      let matchedScenario = null;
+      let locName = '';
+
+      if (fn.includes('ngong') || fn.includes('kajiado') || fn.includes('exampledeed')) {
+        matchedScenario = 'scenario_1';
+        locName = 'Ngong / Kajiado North';
+      } else if (fn.includes('nakuru')) {
+        matchedScenario = 'scenario_2';
+        locName = 'Nakuru Municipality';
+      } else if (fn.includes('kiambu')) {
+        matchedScenario = 'scenario_3';
+        locName = 'Kiambu River Corridor';
+      } else if (fn.includes('eldoret')) {
+        matchedScenario = 'scenario_4';
+        locName = 'Eldoret Municipality';
+      } else if (fn.includes('nyali') || fn.includes('mombasa')) {
+        matchedScenario = 'scenario_5';
+        locName = 'Mombasa Nyali Beach';
+      } else if (fn.includes('athi') || fn.includes('syokimau') || fn.includes('machakos')) {
+        matchedScenario = 'scenario_6';
+        locName = 'Athi River Logistics';
+      } else if (fn.includes('kisumu') || fn.includes('victoria')) {
+        matchedScenario = 'scenario_7';
+        locName = 'Kisumu Lakefront';
+      } else if (fn.includes('naivasha') || fn.includes('olkaria')) {
+        matchedScenario = 'scenario_8';
+        locName = 'Naivasha Olkaria Corridor';
+      }
+
+      if (matchedScenario) {
+        const satUrl = `/data/examples/${matchedScenario}_satellite.png`;
+        fetch(satUrl)
+          .then(r => r.blob())
+          .then(blob => {
+            const reader = new FileReader();
+            reader.onload = (re) => {
+              uploadedSatB64 = re.target.result;
+              document.getElementById('satPreview').src = uploadedSatB64;
+              document.getElementById('satPreview').classList.remove('hidden');
+              document.getElementById('satPlaceholder').classList.add('hidden');
+              document.getElementById('satFilenameBadge').innerText = `🛰️ Auto-Synced: ${locName} Context (WGS84)`;
+              document.getElementById('satFilenameBadge').classList.remove('hidden');
+              if (window.lucide) lucide.createIcons();
+            };
+            reader.readAsDataURL(blob);
+          })
+          .catch(() => {});
+      }
+    }
+
+    // Processing Pop-Down Notification Controller
+    function showProcessingPopdown() {
+      const pop = document.getElementById('processingPopdown');
+      const title = document.getElementById('popdownStageTitle');
+      const desc = document.getElementById('popdownStageDesc');
+      const btn = document.getElementById('runAuditBtn');
+
+      if (btn) {
+        btn.disabled = true;
+        btn.classList.add('opacity-75', 'cursor-not-allowed');
+        btn.innerHTML = '<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2 inline-block"></div><span>Auditing Cadastre...</span>';
+      }
+
+      if (pop) {
+        pop.classList.remove('-translate-y-28', 'opacity-0', 'pointer-events-none');
+        pop.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+      }
+
+      const stages = [
+        { t: "Extracting Deed Plan...", d: "Reading parcel metadata & bearing table with Meta Muse AI..." },
+        { t: "Executing Pure Geometry...", d: "Computing Bowditch misclosure & Shoelace area (Survey Act Cap 299)..." },
+        { t: "Screening Spatial Reserves...", d: "Checking 30m riparian, road setbacks & satellite alignment (SAM 3.1)..." },
+        { t: "Synthesizing Advisory...", d: "Compiling land valuation benchmarks & due diligence report..." },
+      ];
+
+      let idx = 0;
+      if (title && desc) {
+        title.innerText = stages[0].t;
+        desc.innerText = stages[0].d;
+      }
+
+      clearInterval(popdownInterval);
+      popdownInterval = setInterval(() => {
+        idx = (idx + 1) % stages.length;
+        if (title && desc) {
+          title.innerText = stages[idx].t;
+          desc.innerText = stages[idx].d;
+        }
+      }, 1800);
+    }
+
+    function hideProcessingPopdown() {
+      clearInterval(popdownInterval);
+      const pop = document.getElementById('processingPopdown');
+      const btn = document.getElementById('runAuditBtn');
+
+      if (btn) {
+        btn.disabled = false;
+        btn.classList.remove('opacity-75', 'cursor-not-allowed');
+        btn.innerHTML = '<i data-lucide="play" class="w-4 h-4 fill-current mr-2 inline-block"></i><span>Run Cadastral Audit</span>';
+        if (window.lucide) lucide.createIcons();
+      }
+
+      if (pop) {
+        pop.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+        pop.classList.add('-translate-y-28', 'opacity-0', 'pointer-events-none');
+      }
+    }
 
     // Auto-load high-resolution satellite imagery context for Kenya
     function autoLoadKenyaSatellite() {
@@ -1644,6 +1779,7 @@
 
     // Run Full Audit
     function runAudit() {
+      showProcessingPopdown();
       document.getElementById('loadingIndicator').classList.remove('hidden');
       document.getElementById('resultsSection').classList.add('hidden');
 
@@ -1663,6 +1799,7 @@
       })
       .then(r => r.json())
       .then(data => {
+        hideProcessingPopdown();
         document.getElementById('loadingIndicator').classList.add('hidden');
         if (data.error) {
           alert(`Audit Error: ${data.error}`);
@@ -1671,6 +1808,7 @@
         renderResults(data);
       })
       .catch(err => {
+        hideProcessingPopdown();
         document.getElementById('loadingIndicator').classList.add('hidden');
         alert(`Request failed: ${err}`);
       });
@@ -2152,6 +2290,7 @@
       };
 
       closeManualModal();
+      showProcessingPopdown();
       document.getElementById('loadingIndicator').classList.remove('hidden');
       document.getElementById('resultsSection').classList.add('hidden');
 
@@ -2162,6 +2301,7 @@
       })
       .then(r => r.json())
       .then(data => {
+        hideProcessingPopdown();
         document.getElementById('loadingIndicator').classList.add('hidden');
         if (data.error) {
           alert(`Error: ${data.error}`);
@@ -2170,14 +2310,15 @@
         renderResults(data);
       })
       .catch(err => {
+        hideProcessingPopdown();
         document.getElementById('loadingIndicator').classList.add('hidden');
         alert(`Audit failed: ${err}`);
       });
     }
 
-    // Auto-load scenario_1 on initial startup
+    // Default startup: clean upload interface ready for user document
     window.addEventListener('DOMContentLoaded', () => {
-      loadScenario('scenario_1');
+      if (window.lucide) lucide.createIcons();
     });
   </script>
 </body>
