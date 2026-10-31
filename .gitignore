@@ -6,6 +6,7 @@
 # Run artifacts
 runs/
 data/cache/
+.chrome_demo_profile/
 
 # Python
 __pycache__/

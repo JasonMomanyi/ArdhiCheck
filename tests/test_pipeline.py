@@ -127,3 +127,56 @@ class TestPipelineScenarios:
         assert result["verdict"] == "GREEN"
         assert result["area"]["computed_m2"] == 2500.0
         assert result["provenance"]["extraction"]["source"] == "Manual User Entry"
+
+    def test_uploaded_csv_audit(self):
+        csv_data = (
+            "Bearing_DMS,Distance_m\n"
+            "000°00'00\",100.000\n"
+            "090°00'00\",50.000\n"
+            "180°00'00\",100.000\n"
+            "270°00'00\",50.000\n"
+        )
+        result = run_survey_audit(
+            document_text=csv_data,
+            filename="upperhill_boundary.csv",
+            manual_stated_area=0.50,
+        )
+        assert result["verdict"] == "GREEN"
+        assert result["closure"]["relative_precision"] == "1:inf"
+        assert result["area"]["within_tolerance"] is True
+        assert "upperhill_boundary.csv" in result["provenance"]["extraction"]["source"]
+
+    def test_uploaded_geojson_audit(self):
+        geojson_data = """{
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "properties": {"lr_number": "L.R. 209/TEST", "stated_area_ha": 0.446},
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[
+                        [36.8160, -1.2990],
+                        [36.8160, -1.2981],
+                        [36.8164, -1.2981],
+                        [36.8164, -1.2990],
+                        [36.8160, -1.2990]
+                    ]]
+                }
+            }]
+        }"""
+        result = run_survey_audit(
+            document_text=geojson_data,
+            filename="parcel_boundary.geojson",
+        )
+        assert result["verdict"] in ("GREEN", "AMBER")
+        assert len(result["legs"]) == 4
+        assert "L.R. 209/TEST" in result["lr_number"]
+
+    def test_scenario_5_mombasa_nyali(self):
+        result = run_survey_audit(preset_hint="scenario_5")
+        assert result["verdict"] == "GREEN"
+        assert len(result["legs"]) == 5
+
+    def test_scenario_6_athi_river(self):
+        result = run_survey_audit(preset_hint="scenario_6")
+        assert result["verdict"] == "GREEN"

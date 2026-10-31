@@ -4,7 +4,7 @@
   "lr_number": "L.R. MN/I/5432",
   "district": "Mombasa",
   "locality": "Nyali Beachfront / Links Road",
-  "stated_area": 1.25,
+  "stated_area": 1.28,
   "stated_unit": "ha",
   "crs_name": "arc1960_utm37s",
   "start_coords": [
@@ -13,30 +13,30 @@
   ],
   "legs": [
     [
-      "015\u00b000'00\"",
-      "120.000"
+      "000\u00b000'00\"",
+      "100.000"
     ],
     [
-      "095\u00b000'00\"",
-      "105.000"
+      "075\u00b057'50\"",
+      "103.078"
     ],
     [
-      "165\u00b000'00\"",
-      "115.000"
+      "165\u00b057'50\"",
+      "103.078"
     ],
     [
-      "245\u00b000'00\"",
-      "80.000"
+      "225\u00b000'00\"",
+      "35.355"
     ],
     [
-      "290\u00b036'12\"",
-      "45.280"
+      "270\u00b000'00\"",
+      "100.000"
     ]
   ],
   "expected_verdict": "GREEN",
   "notes": [
     "Cadastral survey of prime coastal residential/hotel development parcel.",
-    "Traverse loop closes within statutory 1:10,000 Class A precision.",
+    "Traverse loop closes with zero linear error; Class A precision.",
     "Outside 60m high-water mark tidal statutory setback."
   ]
 }

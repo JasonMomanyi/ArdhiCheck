@@ -234,13 +234,13 @@
               1. Survey Deed Plan (Image or PDF)
             </label>
             <div id="planDropZone" class="border-2 border-dashed border-slate-300 hover:border-emerald-500 rounded-xl p-6 text-center cursor-pointer transition bg-slate-50/50 hover:bg-emerald-50/30 flex flex-col items-center justify-center min-h-[220px]">
-              <input type="file" id="planFileInput" accept="image/png,image/jpeg,image/webp,application/pdf" class="hidden">
+              <input type="file" id="planFileInput" accept="image/png,image/jpeg,image/webp,application/pdf,.csv,.tsv,.geojson,.json,.txt" class="hidden">
               <div id="planPlaceholder" class="space-y-2">
                 <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
-                  <i data-lucide="file-text" class="w-6 h-6"></i>
+                  <i data-lucide="upload-cloud" class="w-6 h-6"></i>
                 </div>
-                <div class="text-sm font-semibold text-slate-700">Drop Deed Plan here or <span class="text-emerald-600 underline">browse</span></div>
-                <div class="text-xs text-slate-400">PNG, JPG, WEBP, or PDF up to 20MB</div>
+                <div class="text-sm font-semibold text-slate-700">Drop any Deed Plan, CSV, GeoJSON, or PDF here or <span class="text-emerald-600 underline">browse</span></div>
+                <div class="text-xs text-slate-400">Images (PNG/JPG), Deed PDFs, Boundary CSVs, or GeoJSON up to 25MB</div>
               </div>
               <img id="planPreview" class="hidden max-h-48 rounded shadow border object-contain mx-auto" src="" alt="Plan Preview">
               <div id="planFilenameBadge" class="hidden mt-2 text-xs font-mono bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full"></div>
@@ -1084,7 +1084,10 @@
       card.classList.remove('hidden');
     }
 
-    // File Upload Handlers
+    // File Upload Handlers (Supports Images, PDFs, CSVs, GeoJSONs)
+    let uploadedDocText = null;
+    let uploadedDocName = null;
+
     const planDrop = document.getElementById('planDropZone');
     const planInput = document.getElementById('planFileInput');
     planDrop.addEventListener('click', () => planInput.click());
@@ -1092,16 +1095,31 @@
       const file = e.target.files[0];
       if (file) {
         currentScenarioId = null;
+        uploadedDocText = null;
+        uploadedPlanB64 = null;
+        uploadedDocName = file.name;
         document.getElementById('planFilenameBadge').innerText = file.name;
         document.getElementById('planFilenameBadge').classList.remove('hidden');
         document.getElementById('planPlaceholder').classList.add('hidden');
-        const reader = new FileReader();
-        reader.onload = (re) => {
-          uploadedPlanB64 = re.target.result;
-          document.getElementById('planPreview').src = uploadedPlanB64;
-          document.getElementById('planPreview').classList.remove('hidden');
-        };
-        reader.readAsDataURL(file);
+
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (['csv', 'tsv', 'geojson', 'json', 'txt'].includes(ext)) {
+          const reader = new FileReader();
+          reader.onload = (re) => {
+            uploadedDocText = re.target.result;
+            document.getElementById('planPreview').classList.add('hidden');
+            document.getElementById('planFilenameBadge').innerText = `📄 ${file.name} (Data Table / Vector)`;
+          };
+          reader.readAsText(file);
+        } else {
+          const reader = new FileReader();
+          reader.onload = (re) => {
+            uploadedPlanB64 = re.target.result;
+            document.getElementById('planPreview').src = uploadedPlanB64;
+            document.getElementById('planPreview').classList.remove('hidden');
+          };
+          reader.readAsDataURL(file);
+        }
       }
     });
 
@@ -1124,16 +1142,30 @@
       }
     });
 
+    const SCENARIO_PLAN_MAP = {
+      'scenario_1': '/data/examples/scenario_1_clean_plan.png',
+      'scenario_2': '/data/examples/scenario_2_transposed_plan.png',
+      'scenario_3': '/data/examples/scenario_3_riparian_plan.png',
+      'scenario_4': '/data/examples/scenario_4_area_deficit_plan.png',
+      'scenario_5': '/data/examples/scenario_5_nyali_beach_plan.png',
+      'scenario_6': '/data/examples/scenario_6_athi_river_plan.png',
+      'scenario_7': '/data/examples/scenario_7_kisumu_lakefront_plan.png',
+      'scenario_8': '/data/examples/scenario_8_naivasha_corridor_plan.png',
+    };
+
     // 1-Click Scenario Loader (One Real Pipeline)
     function loadScenario(scenarioId) {
       currentScenarioId = scenarioId;
       uploadedPlanB64 = null;
       uploadedSatB64 = null;
+      uploadedDocText = null;
+      uploadedDocName = null;
 
-      document.getElementById('planPreview').src = `/data/examples/${scenarioId}_plan.png`;
+      const planUrl = SCENARIO_PLAN_MAP[scenarioId] || `/data/examples/${scenarioId}_clean_plan.png`;
+      document.getElementById('planPreview').src = planUrl;
       document.getElementById('planPreview').classList.remove('hidden');
       document.getElementById('planPlaceholder').classList.add('hidden');
-      document.getElementById('planFilenameBadge').innerText = `${scenarioId}_plan.png`;
+      document.getElementById('planFilenameBadge').innerText = planUrl.split('/').pop();
       document.getElementById('planFilenameBadge').classList.remove('hidden');
 
       document.getElementById('satPreview').src = `/data/examples/${scenarioId}_satellite.png`;
@@ -1154,6 +1186,8 @@
         preset_hint: currentScenarioId,
         plan_image_b64: uploadedPlanB64,
         satellite_image_b64: uploadedSatB64,
+        document_text: uploadedDocText,
+        filename: uploadedDocName,
         crs_name: document.getElementById('crsSelect').value,
       };
 

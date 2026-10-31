@@ -42,7 +42,8 @@ def parse_tabular_or_gis_data(text_content: str, filename: str = "") -> dict[str
         return None
 
     # 1. GeoJSON Parsing
-    if text_content.startswith("{") and ("Feature" in text_content or "coordinates" in text_content):
+    is_json = text_content.startswith("{")
+    if is_json and ("Feature" in text_content or "coordinates" in text_content):
         try:
             data = json.loads(text_content)
             coords = []
@@ -95,7 +96,7 @@ def parse_tabular_or_gis_data(text_content: str, filename: str = "") -> dict[str
                         "lr_number": str(lr_num),
                         "stated_area": float(stated_a),
                         "stated_unit": "ha",
-                        "notes": [f"Parsed {len(legs)} boundary legs from GeoJSON parcel polygon."],
+                        "notes": [f"Parsed {len(legs)} boundary legs from GeoJSON polygon."],
                     }
         except Exception:
             pass
@@ -184,7 +185,9 @@ def run_survey_audit(
         if not satellite_image_bytes:
             satellite_image_bytes = _find_preset_image(preset_hint, "satellite")
 
-    parsed_doc = parse_tabular_or_gis_data(document_text or "", filename) if document_text else None
+    parsed_doc = (
+        parse_tabular_or_gis_data(document_text, filename) if document_text else None
+    )
 
     if parsed_doc:
         legs_as_text = parsed_doc["legs"]

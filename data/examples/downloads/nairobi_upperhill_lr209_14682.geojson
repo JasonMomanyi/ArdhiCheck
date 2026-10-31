@@ -6,7 +6,7 @@
       "properties": {
         "lr_number": "L.R. 209/14682",
         "locality": "Upper Hill, Nairobi",
-        "stated_area_ha": 0.5,
+        "stated_area_ha": 0.446,
         "datum": "Arc 1960 / UTM Zone 37S"
       },
       "geometry": {

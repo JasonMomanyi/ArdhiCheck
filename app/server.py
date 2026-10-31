@@ -85,7 +85,20 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
 
         if path.startswith("/data/examples/"):
             rel_path = path.replace("/data/examples/", "")
-            self._send_file(EXAMPLES_DIR / rel_path)
+            target_file = EXAMPLES_DIR / rel_path
+            if not target_file.is_file():
+                stem = Path(rel_path).stem
+                suffix = Path(rel_path).suffix
+                matches = list(EXAMPLES_DIR.glob(f"*{stem}*{suffix}"))
+                if not matches and "_" in stem:
+                    parts = stem.split("_")
+                    if len(parts) >= 2:
+                        prefix = f"{parts[0]}_{parts[1]}"
+                        kind = parts[-1] if len(parts) > 2 else ""
+                        matches = list(EXAMPLES_DIR.glob(f"*{prefix}*{kind}*{suffix}"))
+                if matches:
+                    target_file = matches[0]
+            self._send_file(target_file)
             return
 
         # API Endpoints

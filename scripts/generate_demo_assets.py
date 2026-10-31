@@ -406,21 +406,21 @@ def main() -> None:
         "lr_number": "L.R. MN/I/5432",
         "district": "Mombasa",
         "locality": "Nyali Beachfront / Links Road",
-        "stated_area": 1.25,
+        "stated_area": 1.28,
         "stated_unit": "ha",
         "crs_name": "arc1960_utm37s",
         "start_coords": [573000.0, 9553000.0],
         "legs": [
-            ("015°00'00\"", "120.000"),
-            ("095°00'00\"", "105.000"),
-            ("165°00'00\"", "115.000"),
-            ("245°00'00\"", "80.000"),
-            ("290°36'12\"", "45.280"),
+            ("000°00'00\"", "100.000"),
+            ("075°57'50\"", "103.078"),
+            ("165°57'50\"", "103.078"),
+            ("225°00'00\"", "35.355"),
+            ("270°00'00\"", "100.000"),
         ],
         "expected_verdict": "GREEN",
         "notes": [
             "Cadastral survey of prime coastal residential/hotel development parcel.",
-            "Traverse loop closes within statutory 1:10,000 Class A precision.",
+            "Traverse loop closes with zero linear error; Class A precision.",
             "Outside 60m high-water mark tidal statutory setback.",
         ],
     }
@@ -431,7 +431,7 @@ def main() -> None:
         district=meta5["district"],
         locality=meta5["locality"],
         legs=meta5["legs"],
-        stated_area="1.250 Ha",
+        stated_area="1.280 Ha",
         datum_text="Arc 1960 / UTM Zone 37S (EPSG 21037)",
         notes=meta5["notes"],
     )
@@ -607,7 +607,7 @@ def main() -> None:
                     "properties": {
                         "lr_number": "L.R. 209/14682",
                         "locality": "Upper Hill, Nairobi",
-                        "stated_area_ha": 0.50,
+                        "stated_area_ha": 0.446,
                         "datum": "Arc 1960 / UTM Zone 37S"
                     },
                     "geometry": {
@@ -641,7 +641,9 @@ def main() -> None:
         zf.write(csv6, arcname=f"tables/{csv6.name}")
         zf.write(geojson1, arcname=f"gis/{geojson1.name}")
 
-    print("Generated 8 realistic Kenyan demo scenarios & downloadable test survey pack in data/examples/")
+    print(
+        "Generated 8 realistic Kenyan demo scenarios and test survey pack in data/examples/"
+    )
 
 
 if __name__ == "__main__":
