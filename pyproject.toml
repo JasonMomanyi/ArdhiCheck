@@ -8,7 +8,7 @@ name = "ardhicheck"
 version = "0.1.0"
 description = "AI agent that checks Kenyan land survey plans for internal consistency and restricted-land overlap."
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
 requires-python = ">=3.10"
 authors = [
     {name = "Jason Orandi Momanyi"},
@@ -19,6 +19,10 @@ dependencies = [
     "pyproj>=3.6",
     "shapely>=2.0",
 ]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+exclude = ["api*", "data*", "eval*", "recordings*", "tests*"]
 
 [project.optional-dependencies]
 meta = [
