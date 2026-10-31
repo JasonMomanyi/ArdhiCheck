@@ -75,7 +75,16 @@ REGIONAL_BENCHMARKS: list[dict[str, Any]] = [
         "stamp_duty_rate": 0.04,
     },
     {
-        "keywords": ["machakos", "syokimau", "athi river", "mavoko", "kitengela"],
+        "keywords": [
+            "machakos",
+            "syokimau",
+            "athi river",
+            "mavoko",
+            "kitengela",
+            "ngong",
+            "kajiado",
+            "rongai",
+        ],
         "county": "Machakos / Kajiado",
         "zoning": "Industrial Corridor / Commuter Residential",
         "rate_min": 8_000_000,
@@ -137,6 +146,7 @@ def estimate_land_valuation(
     computed_m2: float,
     stated_m2: float = 0.0,
     exact_price_kes: float | None = None,
+    lr_number: str = "",
 ) -> ValuationEstimate:
     """Calculate indicative market valuation range and statutory acquisition fees."""
     # Preferred area is computed m2 from coordinates, fallback to stated
@@ -145,7 +155,7 @@ def estimate_land_valuation(
     area_ha = effective_m2 / 10000.0
 
     # Match benchmark by keyword
-    search_text = f"{locality} {district}".lower()
+    search_text = f"{locality} {district} {lr_number}".lower()
     matched_bench = DEFAULT_BENCHMARK
     for bench in REGIONAL_BENCHMARKS:
         if any(kw in search_text for kw in bench["keywords"]):

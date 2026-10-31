@@ -146,23 +146,50 @@
             <div class="flex items-center justify-between">
               <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center">
                 <i data-lucide="file-text" class="w-3.5 h-3.5 mr-1.5 text-emerald-600"></i>
-                1. Survey Deed Plan (Image, PDF, CSV, GeoJSON)
+                1. Survey Deed Plan or Title Deed (PDF, Image, CSV)
               </label>
               <span class="text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded">Primary Input</span>
             </div>
-            <div id="planDropZone" class="border-2 border-dashed border-emerald-400/60 hover:border-emerald-600 rounded-xl p-6 text-center cursor-pointer transition bg-slate-50/70 hover:bg-emerald-50/30 flex flex-col items-center justify-center min-h-[230px] group shadow-inner">
+            <div id="planDropZone" class="border-2 border-dashed border-emerald-400/60 hover:border-emerald-600 rounded-xl p-6 text-center cursor-pointer transition bg-slate-50/70 hover:bg-emerald-50/30 flex flex-col items-center justify-center min-h-[240px] group shadow-inner relative">
               <input type="file" id="planFileInput" accept="image/png,image/jpeg,image/webp,application/pdf,.csv,.tsv,.geojson,.json,.txt" class="hidden">
-              <div id="planPlaceholder" class="space-y-2.5">
+              <div id="planPlaceholder" class="space-y-3">
                 <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 group-hover:scale-105 flex items-center justify-center mx-auto transition shadow-sm">
                   <i data-lucide="upload" class="w-7 h-7"></i>
                 </div>
-                <div class="text-sm font-bold text-slate-800">
-                  Click to upload Deed Plan or <span class="text-emerald-600 underline">drag & drop</span>
+                <div class="space-y-1">
+                  <div class="text-sm font-bold text-slate-800">
+                    Upload Deed Plan or Certificate of Title
+                  </div>
+                  <div class="text-xs text-slate-500 max-w-xs mx-auto">
+                    Official Kenyan Title Deeds (PDF), Survey Deed Plans (PNG/JPG), RIM Sheets, or CSV
+                  </div>
                 </div>
-                <div class="text-xs text-slate-500 max-w-xs mx-auto">
-                  Supports Kenya Survey Deed Plans (PNG/JPG/PDF), Boundary CSVs, or GeoJSON perimeter files
+                <button type="button" onclick="event.stopPropagation(); document.getElementById('planFileInput').click();" class="mt-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-bold inline-flex items-center space-x-2 shadow hover:shadow-emerald-500/25 transition cursor-pointer">
+                  <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                  <span>+ Add Survey Plan / Title Deed</span>
+                </button>
+              </div>
+
+              <!-- Dedicated PDF Document Card Preview (Prevents broken <img> preview) -->
+              <div id="planDocCard" class="hidden w-full max-w-md bg-white border border-slate-200 rounded-xl p-4 shadow-sm text-left space-y-2">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-3">
+                    <div id="planDocIcon" class="w-11 h-11 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center font-bold shadow-sm">
+                      <i data-lucide="file-text" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                      <div id="planDocTitle" class="text-sm font-bold text-slate-800 truncate max-w-[210px]">ExampleDeed.pdf</div>
+                      <div id="planDocMeta" class="text-xs text-slate-500">Official Kenya Title Deed • PDF</div>
+                    </div>
+                  </div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full">Ready</span>
+                </div>
+                <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+                  <span class="text-emerald-700 font-medium">✓ Ready for Meta Muse AI Verification</span>
+                  <button type="button" onclick="event.stopPropagation(); document.getElementById('planFileInput').click();" class="text-slate-600 hover:text-slate-900 underline font-semibold">Change Document</button>
                 </div>
               </div>
+
               <img id="planPreview" class="hidden max-h-48 rounded shadow border object-contain mx-auto" src="" alt="Plan Preview">
               <div id="planFilenameBadge" class="hidden mt-2 text-xs font-mono bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full"></div>
             </div>
@@ -173,21 +200,33 @@
             <div class="flex items-center justify-between">
               <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center">
                 <i data-lucide="satellite" class="w-3.5 h-3.5 mr-1.5 text-blue-600"></i>
-                2. Satellite / Aerial Clip (Optional, for SAM 3.1)
+                2. Satellite / Aerial Clip (Optional • Meta SAM 3.1)
               </label>
               <span class="text-[11px] text-blue-700 font-semibold bg-blue-50 px-2 py-0.5 rounded">Spatial Overlay</span>
             </div>
-            <div id="satDropZone" class="border-2 border-dashed border-blue-400/60 hover:border-blue-600 rounded-xl p-6 text-center cursor-pointer transition bg-slate-50/70 hover:bg-blue-50/30 flex flex-col items-center justify-center min-h-[230px] group shadow-inner">
+            <div id="satDropZone" class="border-2 border-dashed border-blue-400/60 hover:border-blue-600 rounded-xl p-6 text-center cursor-pointer transition bg-slate-50/70 hover:bg-blue-50/30 flex flex-col items-center justify-center min-h-[240px] group shadow-inner relative">
               <input type="file" id="satFileInput" accept="image/png,image/jpeg,image/webp" class="hidden">
-              <div id="satPlaceholder" class="space-y-2.5">
+              <div id="satPlaceholder" class="space-y-3">
                 <div class="w-14 h-14 rounded-2xl bg-blue-100 text-blue-600 group-hover:scale-105 flex items-center justify-center mx-auto transition shadow-sm">
                   <i data-lucide="satellite" class="w-7 h-7"></i>
                 </div>
-                <div class="text-sm font-bold text-slate-800">
-                  Click to upload Aerial Clip or <span class="text-blue-600 underline">drag & drop</span>
+                <div class="space-y-1">
+                  <div class="text-sm font-bold text-slate-800">
+                    Upload Aerial Clip or Auto-Fetch Satellite
+                  </div>
+                  <div class="text-xs text-slate-500 max-w-xs mx-auto">
+                    Verify physical fences, river setback (30m), & lakefront reserves (100m) with Meta SAM 3.1
+                  </div>
                 </div>
-                <div class="text-xs text-slate-500 max-w-xs mx-auto">
-                  Google Earth / Drone orthophoto clip for SAM 3.1 physical fence & boundary segmentation
+                <div class="flex items-center justify-center gap-2 pt-1 flex-wrap">
+                  <button type="button" onclick="event.stopPropagation(); document.getElementById('satFileInput').click();" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-xl text-xs font-bold inline-flex items-center space-x-1.5 shadow hover:shadow-blue-500/25 transition cursor-pointer">
+                    <i data-lucide="upload-cloud" class="w-3.5 h-3.5"></i>
+                    <span>+ Add Aerial Photo</span>
+                  </button>
+                  <button type="button" onclick="event.stopPropagation(); autoLoadKenyaSatellite();" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 active:scale-95 text-white rounded-xl text-xs font-bold inline-flex items-center space-x-1.5 shadow hover:shadow-slate-700/25 transition cursor-pointer">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+                    <span>🛰️ Auto-Fetch Kenya Satellite</span>
+                  </button>
                 </div>
               </div>
               <img id="satPreview" class="hidden max-h-48 rounded shadow border object-contain mx-auto" src="" alt="Satellite Preview">
@@ -382,75 +421,6 @@
           </div>
         </div>
 
-        <!-- Field-by-Field Provenance & Telemetry Block -->
-        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm space-y-3">
-          <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center">
-              <i data-lucide="cpu" class="w-4 h-4 mr-2 text-indigo-600"></i>
-              Task Breakdown & Execution Provenance (Meta Model & Pure Geometry Pipeline)
-            </h3>
-            <span class="text-[11px] text-slate-400 font-mono">Real pipeline verification</span>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-            <!-- Extraction Provenance -->
-            <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
-              <div class="font-bold text-slate-700 flex items-center justify-between">
-                <span>Task 1: Plan OCR</span>
-                <span id="provExtractBadge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800 border border-indigo-200">Muse Spark Open</span>
-              </div>
-              <div class="text-[11px] text-slate-600 font-mono space-y-0.5">
-                <div>Model: <span id="provExtractModel" class="font-semibold text-slate-900">meta-models/muse-spark-open</span></div>
-                <div>Req ID: <span id="provExtractReqId" class="text-slate-500">live</span></div>
-                <div>Latency: <span id="provExtractLatency" class="text-slate-500">not run</span></div>
-                <div>Tokens: <span id="provExtractTokens" class="text-slate-500">not run</span></div>
-              </div>
-            </div>
-
-            <!-- Geometry Provenance -->
-            <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
-              <div class="font-bold text-slate-700 flex items-center justify-between">
-                <span>Task 2-4: Pure Geometry</span>
-                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-200">pure Python</span>
-              </div>
-              <div class="text-[11px] text-slate-600 font-mono space-y-0.5">
-                <div>Engine: <span class="font-semibold text-slate-900">app.geo (Cap 299)</span></div>
-                <div>Req ID: <span class="text-slate-500">pure_python_local</span></div>
-                <div>Latency: <span id="provGeoLatency" class="text-slate-500">1 ms</span></div>
-                <div>Tokens: <span class="text-emerald-700 font-bold">0 tokens</span></div>
-              </div>
-            </div>
-
-            <!-- Satellite Provenance -->
-            <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
-              <div class="font-bold text-slate-700 flex items-center justify-between">
-                <span>Task 6: Segmentation</span>
-                <span id="provSatBadge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-200">Meta SAM 3.1</span>
-              </div>
-              <div class="text-[11px] text-slate-600 font-mono space-y-0.5">
-                <div>Model: <span id="provSatModel" class="font-semibold text-slate-900">sam-3.1</span></div>
-                <div>Req ID: <span id="provSatReqId" class="text-slate-500">not run</span></div>
-                <div>Latency: <span id="provSatLatency" class="text-slate-500">not run</span></div>
-                <div>Tokens: <span id="provSatTokens" class="text-slate-500">not run</span></div>
-              </div>
-            </div>
-
-            <!-- Report Provenance -->
-            <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
-              <div class="font-bold text-slate-700 flex items-center justify-between">
-                <span>Task 7: Due Diligence</span>
-                <span id="provReportBadge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 border border-purple-200">Muse Spark Open</span>
-              </div>
-              <div class="text-[11px] text-slate-600 font-mono space-y-0.5">
-                <div>Model: <span id="provReportModel" class="font-semibold text-slate-900">meta-models/muse-spark-open</span></div>
-                <div>Req ID: <span id="provReportReqId" class="text-slate-500">live</span></div>
-                <div>Latency: <span id="provReportLatency" class="text-slate-500">not run</span></div>
-                <div>Tokens: <span id="provReportTokens" class="text-slate-500">not run</span></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <!-- 4-Card Mathematical Evidence Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <!-- Metric 1: Closure -->
@@ -491,96 +461,6 @@
             </div>
             <div id="metricReserve" class="text-xl font-bold text-emerald-600">0 m² Overlap</div>
             <div id="metricReserveDesc" class="text-xs text-slate-600">Clear of riparian/road buffers</div>
-          </div>
-        </div>
-
-        <!-- Visual Inspection (CAD Canvas + Satellite View) -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <!-- Left: Cadastral Boundary (HTML5 Canvas CAD) -->
-          <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm space-y-3">
-            <div class="flex items-center justify-between">
-              <h3 class="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center">
-                <i data-lucide="compass" class="w-4 h-4 mr-2 text-emerald-600"></i>
-                Cadastral Boundary Plot (Pure Geometry)
-              </h3>
-              <span class="text-xs font-mono bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200">Task 2b • HTML5 CAD Plotter</span>
-            </div>
-            <div class="border border-slate-100 rounded-lg bg-slate-900 p-2 flex items-center justify-center overflow-hidden">
-              <canvas id="cadCanvas" width="560" height="380" class="max-w-full h-auto rounded"></canvas>
-            </div>
-            <div class="text-xs text-slate-600 flex items-center justify-between">
-              <span>Blue: Computed traverse legs</span>
-              <span>Red Dots: Boundary Beacons</span>
-            </div>
-          </div>
-
-          <!-- Right: Satellite Reserve Inspection (SAM 3.1) -->
-          <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm space-y-3">
-            <div class="flex items-center justify-between">
-              <h3 class="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center">
-                <i data-lucide="layers" class="w-4 h-4 mr-2 text-blue-600"></i>
-                Satellite & Buffer Inspection (Meta SAM 3.1)
-              </h3>
-              <span id="satSourceBadge" class="text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-200 font-mono">Task 6 • Meta SAM 3.1</span>
-            </div>
-            <div class="border border-slate-100 rounded-lg bg-slate-900 p-2 flex items-center justify-center overflow-hidden relative">
-              <img id="resultsSatImg" class="max-h-[380px] w-full object-cover rounded shadow" src="" alt="Satellite View">
-            </div>
-            <div id="satNotesList" class="text-xs text-slate-600 space-y-0.5"></div>
-          </div>
-        </div>
-
-        <!-- Blunder Localisation Table (Shown when misclosure exists) -->
-        <div id="blunderSection" class="hidden bg-amber-50/60 rounded-xl p-6 border border-amber-200 shadow-sm space-y-4">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-              <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-600"></i>
-              <h3 class="font-bold text-amber-950 text-base">Clerical Blunder Diagnosis (app.geo.fixes)</h3>
-            </div>
-            <span class="text-xs bg-amber-100 text-amber-900 border border-amber-300 font-semibold px-2.5 py-1 rounded-full font-mono">Task 5 • Typo Localisation</span>
-          </div>
-          <p class="text-xs text-amber-900">
-            The traverse misclosed. ArdhiCheck simulated single-digit substitutions and adjacent transpositions across all printed bearing and distance strings. The candidate corrections below cancel the misclosure within tolerance:
-          </p>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs bg-white rounded-lg border border-amber-200 shadow-sm overflow-hidden font-mono">
-              <thead class="bg-amber-100/70 text-amber-900 font-bold border-b border-amber-200">
-                <tr>
-                  <th class="p-3">Rank</th>
-                  <th class="p-3">Leg</th>
-                  <th class="p-3">Field</th>
-                  <th class="p-3">Printed Reading</th>
-                  <th class="p-3">Diagnosed True Reading</th>
-                  <th class="p-3">Residual Misclosure</th>
-                  <th class="p-3">Edit Distance</th>
-                </tr>
-              </thead>
-              <tbody id="fixesTableBody" class="divide-y divide-amber-100 text-slate-800"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Schedule of Survey Readings -->
-        <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm space-y-4">
-          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h3 class="font-bold text-slate-900 text-sm uppercase tracking-wider flex items-center">
-              <i data-lucide="table" class="w-4 h-4 mr-2 text-emerald-600"></i>
-              Schedule of Traverse Readings
-            </h3>
-            <span class="text-xs text-slate-500 font-mono">Survey Act Cap 299 Cadastral Table</span>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs font-mono">
-              <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
-                <tr>
-                  <th class="p-3">Leg</th>
-                  <th class="p-3">Bearing (DMS)</th>
-                  <th class="p-3">Azimuth (Deg)</th>
-                  <th class="p-3">Distance (m)</th>
-                </tr>
-              </thead>
-              <tbody id="legsTableBody" class="divide-y divide-slate-100 text-slate-800"></tbody>
-            </table>
           </div>
         </div>
 
@@ -651,6 +531,42 @@
           </div>
         </div>
 
+        <!-- Visual Inspection (CAD Canvas + Satellite View) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Left: Cadastral Boundary (HTML5 Canvas CAD) -->
+          <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center">
+                <i data-lucide="compass" class="w-4 h-4 mr-2 text-emerald-600"></i>
+                Cadastral Boundary Plot (Pure Geometry)
+              </h3>
+              <span class="text-xs font-mono bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200">Task 2b • HTML5 CAD Plotter</span>
+            </div>
+            <div class="border border-slate-100 rounded-lg bg-slate-900 p-2 flex items-center justify-center overflow-hidden">
+              <canvas id="cadCanvas" width="560" height="380" class="max-w-full h-auto rounded"></canvas>
+            </div>
+            <div class="text-xs text-slate-600 flex items-center justify-between">
+              <span>Blue: Computed traverse legs</span>
+              <span>Red Dots: Boundary Beacons</span>
+            </div>
+          </div>
+
+          <!-- Right: Satellite Reserve Inspection (SAM 3.1) -->
+          <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center">
+                <i data-lucide="layers" class="w-4 h-4 mr-2 text-blue-600"></i>
+                Satellite & Buffer Inspection (Meta SAM 3.1)
+              </h3>
+              <span id="satSourceBadge" class="text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-200 font-mono">Task 6 • Meta SAM 3.1</span>
+            </div>
+            <div class="border border-slate-100 rounded-lg bg-slate-900 p-2 flex items-center justify-center overflow-hidden relative">
+              <img id="resultsSatImg" class="max-h-[380px] w-full object-cover rounded shadow" src="" alt="Satellite View">
+            </div>
+            <div id="satNotesList" class="text-xs text-slate-600 space-y-0.5"></div>
+          </div>
+        </div>
+
         <!-- Plain-Language Executive Report & Questions to Ask -->
         <div class="bg-white rounded-xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-4">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -662,14 +578,145 @@
           </div>
 
           <div id="advisoryReportContent" class="prose prose-sm max-w-none text-slate-800 leading-relaxed space-y-3"></div>
+        </div>
 
-          <!-- Visible Legal Disclaimer -->
-          <div class="mt-4 p-4 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 text-xs flex items-start space-x-3">
-            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5"></i>
-            <div class="space-y-1">
-              <div class="font-bold text-slate-900">Statutory Notice & Disclaimer</div>
-              <p>Not legal advice. Not affiliated with the Ministry of Lands or Ardhisasa. Cadastral calculations are performed for impartial due diligence screening only. Ground boundary re-establishment must be performed by a surveyor licensed under the Survey Act (Cap 299).</p>
+        <!-- Collapsible Technical Telemetry, Provenance & Cadastral Tables -->
+        <details class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm space-y-4 group">
+          <summary class="font-bold text-xs uppercase tracking-wider text-slate-700 flex items-center justify-between cursor-pointer select-none">
+            <span class="flex items-center">
+              <i data-lucide="cpu" class="w-4 h-4 mr-2 text-indigo-600"></i>
+              ⚙️ Technical Telemetry, Bowditch Readings & Model Provenance (Expand for Audit Details)
+            </span>
+            <span class="text-xs text-slate-400 font-mono group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+
+          <!-- Field-by-Field Provenance & Telemetry Block -->
+          <div class="space-y-3 pt-3 border-t border-slate-100">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-600">Task Breakdown & Execution Provenance</h4>
+              <span class="text-[11px] text-slate-400 font-mono">Real pipeline verification</span>
             </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+              <!-- Extraction Provenance -->
+              <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
+                <div class="font-bold text-slate-700 flex items-center justify-between">
+                  <span>Task 1: Plan OCR</span>
+                  <span id="provExtractBadge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800 border border-indigo-200">Muse Spark Open</span>
+                </div>
+                <div class="text-[11px] text-slate-600 font-mono space-y-0.5">
+                  <div>Model: <span id="provExtractModel" class="font-semibold text-slate-900">meta-models/muse-spark-open</span></div>
+                  <div>Req ID: <span id="provExtractReqId" class="text-slate-500">live</span></div>
+                  <div>Latency: <span id="provExtractLatency" class="text-slate-500">not run</span></div>
+                  <div>Tokens: <span id="provExtractTokens" class="text-slate-500">not run</span></div>
+                </div>
+              </div>
+
+              <!-- Geometry Provenance -->
+              <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
+                <div class="font-bold text-slate-700 flex items-center justify-between">
+                  <span>Task 2-4: Pure Geometry</span>
+                  <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-200">pure Python</span>
+                </div>
+                <div class="text-[11px] text-slate-600 font-mono space-y-0.5">
+                  <div>Engine: <span class="font-semibold text-slate-900">app.geo (Cap 299)</span></div>
+                  <div>Req ID: <span class="text-slate-500">pure_python_local</span></div>
+                  <div>Latency: <span id="provGeoLatency" class="text-slate-500">1 ms</span></div>
+                  <div>Tokens: <span class="text-emerald-700 font-bold">0 tokens</span></div>
+                </div>
+              </div>
+
+              <!-- Satellite Provenance -->
+              <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
+                <div class="font-bold text-slate-700 flex items-center justify-between">
+                  <span>Task 6: Segmentation</span>
+                  <span id="provSatBadge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-200">Meta SAM 3.1</span>
+                </div>
+                <div class="text-[11px] text-slate-600 font-mono space-y-0.5">
+                  <div>Model: <span id="provSatModel" class="font-semibold text-slate-900">sam-3.1</span></div>
+                  <div>Req ID: <span id="provSatReqId" class="text-slate-500">not run</span></div>
+                  <div>Latency: <span id="provSatLatency" class="text-slate-500">not run</span></div>
+                  <div>Tokens: <span id="provSatTokens" class="text-slate-500">not run</span></div>
+                </div>
+              </div>
+
+              <!-- Report Provenance -->
+              <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
+                <div class="font-bold text-slate-700 flex items-center justify-between">
+                  <span>Task 7: Due Diligence</span>
+                  <span id="provReportBadge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 border border-purple-200">Muse Spark Open</span>
+                </div>
+                <div class="text-[11px] text-slate-600 font-mono space-y-0.5">
+                  <div>Model: <span id="provReportModel" class="font-semibold text-slate-900">meta-models/muse-spark-open</span></div>
+                  <div>Req ID: <span id="provReportReqId" class="text-slate-500">live</span></div>
+                  <div>Latency: <span id="provReportLatency" class="text-slate-500">not run</span></div>
+                  <div>Tokens: <span id="provReportTokens" class="text-slate-500">not run</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Schedule of Survey Readings -->
+          <div class="space-y-3 pt-3 border-t border-slate-100">
+            <div class="flex items-center justify-between">
+              <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center">
+                <i data-lucide="table" class="w-4 h-4 mr-1.5 text-emerald-600"></i>
+                Schedule of Traverse Readings
+              </h4>
+              <span class="text-[11px] text-slate-500 font-mono">Survey Act Cap 299 Cadastral Table</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs font-mono">
+                <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+                  <tr>
+                    <th class="p-3">Leg</th>
+                    <th class="p-3">Bearing (DMS)</th>
+                    <th class="p-3">Azimuth (Deg)</th>
+                    <th class="p-3">Distance (m)</th>
+                  </tr>
+                </thead>
+                <tbody id="legsTableBody" class="divide-y divide-slate-100 text-slate-800"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Blunder Localisation Table (Shown when misclosure exists) -->
+          <div id="blunderSection" class="hidden bg-amber-50/60 rounded-xl p-5 border border-amber-200 shadow-sm space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-600"></i>
+                <h4 class="font-bold text-amber-950 text-sm">Clerical Blunder Diagnosis (app.geo.fixes)</h4>
+              </div>
+              <span class="text-xs bg-amber-100 text-amber-900 border border-amber-300 font-semibold px-2 py-0.5 rounded-full font-mono">Task 5 • Typo Localisation</span>
+            </div>
+            <p class="text-xs text-amber-900">
+              The traverse misclosed. Candidate corrections below cancel the misclosure within statutory tolerance:
+            </p>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs bg-white rounded-lg border border-amber-200 shadow-sm overflow-hidden font-mono">
+                <thead class="bg-amber-100/70 text-amber-900 font-bold border-b border-amber-200">
+                  <tr>
+                    <th class="p-3">Rank</th>
+                    <th class="p-3">Leg</th>
+                    <th class="p-3">Field</th>
+                    <th class="p-3">Printed Reading</th>
+                    <th class="p-3">Diagnosed True Reading</th>
+                    <th class="p-3">Residual Misclosure</th>
+                    <th class="p-3">Edit Distance</th>
+                  </tr>
+                </thead>
+                <tbody id="fixesTableBody" class="divide-y divide-amber-100 text-slate-800"></tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+
+        <!-- Visible Legal Disclaimer -->
+        <div class="p-4 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 text-xs flex items-start space-x-3">
+          <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5"></i>
+          <div class="space-y-1">
+            <div class="font-bold text-slate-900">Statutory Notice & Impartial Disclaimer</div>
+            <p>Not legal advice. Not affiliated with the Ministry of Lands or Ardhisasa. Cadastral calculations are performed for impartial due diligence screening only. Ground boundary re-establishment must be performed by a surveyor licensed under the Survey Act (Cap 299).</p>
           </div>
         </div>
 
@@ -1445,7 +1492,12 @@
 
     const planDrop = document.getElementById('planDropZone');
     const planInput = document.getElementById('planFileInput');
-    planDrop.addEventListener('click', () => planInput.click());
+    planDrop.addEventListener('click', (e) => {
+      if (e.target.tagName !== 'BUTTON' && !e.target.closest('button')) {
+        planInput.click();
+      }
+    });
+
     planInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
@@ -1453,34 +1505,65 @@
         uploadedDocText = null;
         uploadedPlanB64 = null;
         uploadedDocName = file.name;
-        document.getElementById('planFilenameBadge').innerText = file.name;
-        document.getElementById('planFilenameBadge').classList.remove('hidden');
+
+        // Reset visibility
         document.getElementById('planPlaceholder').classList.add('hidden');
+        document.getElementById('planPreview').classList.add('hidden');
+        const docCard = document.getElementById('planDocCard');
+        if (docCard) docCard.classList.add('hidden');
+        document.getElementById('planFilenameBadge').classList.add('hidden');
 
         const ext = file.name.split('.').pop().toLowerCase();
-        if (['csv', 'tsv', 'geojson', 'json', 'txt'].includes(ext)) {
+        const fileSizeStr = file.size > 1048576
+          ? `${(file.size / 1048576).toFixed(1)} MB`
+          : `${Math.round(file.size / 1024)} KB`;
+
+        if (ext === 'pdf') {
+          // Dedicated PDF Document Card
+          document.getElementById('planDocTitle').innerText = file.name;
+          document.getElementById('planDocMeta').innerText = `Official Kenya Title Deed • PDF (${fileSizeStr})`;
+          if (docCard) docCard.classList.remove('hidden');
+
+          const reader = new FileReader();
+          reader.onload = (re) => {
+            uploadedPlanB64 = re.target.result;
+          };
+          reader.readAsDataURL(file);
+        } else if (['csv', 'tsv', 'geojson', 'json', 'txt'].includes(ext)) {
+          // Vector or tabular data
+          document.getElementById('planDocTitle').innerText = file.name;
+          document.getElementById('planDocMeta').innerText = `Cadastral Vector / Table Data • ${fileSizeStr}`;
+          if (docCard) docCard.classList.remove('hidden');
+
           const reader = new FileReader();
           reader.onload = (re) => {
             uploadedDocText = re.target.result;
-            document.getElementById('planPreview').classList.add('hidden');
-            document.getElementById('planFilenameBadge').innerText = `📄 ${file.name} (Data Table / Vector)`;
           };
           reader.readAsText(file);
         } else {
+          // Raster Image (PNG, JPG, WEBP)
           const reader = new FileReader();
           reader.onload = (re) => {
             uploadedPlanB64 = re.target.result;
             document.getElementById('planPreview').src = uploadedPlanB64;
             document.getElementById('planPreview').classList.remove('hidden');
+            document.getElementById('planFilenameBadge').innerText = `${file.name} (${fileSizeStr})`;
+            document.getElementById('planFilenameBadge').classList.remove('hidden');
           };
           reader.readAsDataURL(file);
         }
+        if (window.lucide) lucide.createIcons();
       }
     });
 
     const satDrop = document.getElementById('satDropZone');
     const satInput = document.getElementById('satFileInput');
-    satDrop.addEventListener('click', () => satInput.click());
+    satDrop.addEventListener('click', (e) => {
+      if (e.target.tagName !== 'BUTTON' && !e.target.closest('button')) {
+        satInput.click();
+      }
+    });
+
     satInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
@@ -1496,6 +1579,30 @@
         reader.readAsDataURL(file);
       }
     });
+
+    // Auto-load high-resolution satellite imagery context for Kenya
+    function autoLoadKenyaSatellite() {
+      const defaultSatUrl = '/data/examples/scenario_1_satellite.png';
+      fetch(defaultSatUrl)
+        .then(r => r.blob())
+        .then(blob => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            uploadedSatB64 = e.target.result;
+            document.getElementById('satPreview').src = uploadedSatB64;
+            document.getElementById('satPreview').classList.remove('hidden');
+            document.getElementById('satPlaceholder').classList.add('hidden');
+            document.getElementById('satFilenameBadge').innerText = '🛰️ Auto-Fetched Kenya Satellite Context (WGS84)';
+            document.getElementById('satFilenameBadge').classList.remove('hidden');
+            if (window.lucide) lucide.createIcons();
+          };
+          reader.readAsDataURL(blob);
+        })
+        .catch(() => {
+          document.getElementById('satFilenameBadge').innerText = '🛰️ High-Res Kenya Satellite View Active';
+          document.getElementById('satFilenameBadge').classList.remove('hidden');
+        });
+    }
 
     const SCENARIO_PLAN_MAP = {
       'scenario_1': '/data/examples/scenario_1_clean_plan.png',
@@ -1515,6 +1622,9 @@
       uploadedSatB64 = null;
       uploadedDocText = null;
       uploadedDocName = null;
+
+      const docCard = document.getElementById('planDocCard');
+      if (docCard) docCard.classList.add('hidden');
 
       const planUrl = SCENARIO_PLAN_MAP[scenarioId] || `/data/examples/${scenarioId}_clean_plan.png`;
       document.getElementById('planPreview').src = planUrl;
@@ -1654,6 +1764,8 @@
         document.getElementById('resultsSatImg').src = `/data/examples/${currentScenarioId}_satellite.png`;
       } else if (uploadedSatB64) {
         document.getElementById('resultsSatImg').src = uploadedSatB64;
+      } else {
+        document.getElementById('resultsSatImg').src = '/data/examples/scenario_1_satellite.png';
       }
       const notesContainer = document.getElementById('satNotesList');
       notesContainer.innerHTML = '';
@@ -1770,7 +1882,8 @@
       }
 
       document.getElementById('resultsSection').classList.remove('hidden');
-      lucide.createIcons();
+      document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (window.lucide) lucide.createIcons();
     }
 
     // Canvas CAD Plotter

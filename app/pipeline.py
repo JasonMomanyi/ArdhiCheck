@@ -234,8 +234,8 @@ def run_survey_audit(
             manual_stated_area if manual_stated_area is not None else extraction.stated_area
         )
         stated_unit = manual_stated_unit or extraction.stated_unit
-        district = getattr(extraction, "district", "Kenya")
-        locality = getattr(extraction, "locality", "Kenyan Cadastre")
+        district = getattr(extraction, "district", None) or "Kenya"
+        locality = getattr(extraction, "locality", None) or "Kenyan Cadastre"
         crs_name = crs_name or extraction.datum_name
         extraction_source = extraction.source
         notes = extraction.raw_notes
@@ -256,6 +256,31 @@ def run_survey_audit(
         azimuth = parse_bearing(b_str)
         dist = float(d_str)
         parsed_legs.append(Leg(bearing_deg=azimuth, distance_m=dist))
+
+    # Dynamic county coordinate anchor if default start_coords was used
+    if start_coords == (257000.0, 9857000.0):
+        search_loc = f"{locality} {district} {lr_number}".lower()
+        if "ngong" in search_loc or "kajiado" in search_loc:
+            start_coords = (240000.0, 9848000.0)
+        elif (
+            "mombasa" in search_loc
+            or "coast" in search_loc
+            or "nyali" in search_loc
+            or "kilifi" in search_loc
+        ):
+            start_coords = (570000.0, 9550000.0)
+        elif (
+            "nakuru" in search_loc
+            or "naivasha" in search_loc
+            or "olkaria" in search_loc
+        ):
+            start_coords = (170000.0, 9970000.0)
+        elif "kisumu" in search_loc or "victoria" in search_loc:
+            start_coords = (690000.0, 9990000.0)
+        elif "athi" in search_loc or "syokimau" in search_loc or "mavoko" in search_loc:
+            start_coords = (305000.0, 9835000.0)
+        elif "kiambu" in search_loc or "ruiru" in search_loc or "thika" in search_loc:
+            start_coords = (265000.0, 9875000.0)
 
     # Step 3: Compute raw traverse and closure
     raw_coords = compute_traverse(start_coords[0], start_coords[1], parsed_legs)
@@ -372,6 +397,8 @@ def run_survey_audit(
         "verdict": verdict,
         "verdict_reason": verdict_reason,
         "lr_number": lr_number,
+        "district": district,
+        "locality": locality,
         "closure": {
             "misclosure_e": cr.misclosure_e,
             "misclosure_n": cr.misclosure_n,
@@ -404,6 +431,7 @@ def run_survey_audit(
         district=district,
         computed_m2=computed_m2,
         stated_m2=area_comp.get("stated_m2", 0.0),
+        lr_number=lr_number,
     )
 
     # Step 12: GeoJSON packaging for mapping
