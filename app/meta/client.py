@@ -214,6 +214,11 @@ class MetaModelClient:
         env_base = os.environ.get("MODEL_BASE_URL", "").strip()
         self.base_url = (base_url or env_base or META_API_BASE_URL).rstrip("/")
         self.model = model or os.environ.get("MODEL_NAME", "").strip() or DEFAULT_MODEL
+        if "fireworks.ai" in self.base_url and self.model in (
+            "muse-spark-open",
+            "meta-models/muse-spark-open",
+        ):
+            self.model = "accounts/fireworks/models/muse-spark-open"
         self.client = httpx.Client(timeout=60.0)
 
     @property
