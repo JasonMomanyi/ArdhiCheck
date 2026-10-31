@@ -310,16 +310,18 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
             new_base_url = payload.get("base_url", "").strip()
             new_model = payload.get("model", "").strip()
 
-            if new_key:
+            if new_key and new_key != "KEEP_EXISTING":
                 os.environ["MODEL_API_KEY"] = new_key
-                if new_base_url:
-                    os.environ["MODEL_BASE_URL"] = new_base_url
-                if new_model:
-                    os.environ["MODEL_NAME"] = new_model
+            if new_base_url:
+                os.environ["MODEL_BASE_URL"] = new_base_url
+            if new_model:
+                os.environ["MODEL_NAME"] = new_model
 
+            if new_key or new_base_url or new_model:
                 try:
                     dotenv_file = BASE_DIR / ".env"
-                    env_lines = [f"MODEL_API_KEY={new_key}\n"]
+                    existing_key = os.environ.get("MODEL_API_KEY", "")
+                    env_lines = [f"MODEL_API_KEY={existing_key}\n"]
                     if new_base_url:
                         env_lines.append(f"MODEL_BASE_URL={new_base_url}\n")
                     if new_model:
@@ -338,7 +340,8 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
                 )
             else:
                 self._send_json(
-                    {"error": "Empty API key provided"}, status=HTTPStatus.BAD_REQUEST
+                    {"error": "No configuration parameters provided"},
+                    status=HTTPStatus.BAD_REQUEST,
                 )
             return
 

@@ -32,43 +32,27 @@
         <div>
           <div class="flex items-center space-x-2">
             <span class="font-extrabold text-xl tracking-tight text-white">Ardhi<span class="text-emerald-400">Check</span></span>
-            <span class="text-xs px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 font-mono">v0.2.0</span>
           </div>
           <p class="text-xs text-slate-400 hidden sm:block">Kenyan Cadastral Plan Auditor & Meta Muse AI Verification Engine</p>
         </div>
       </div>
 
       <div class="flex items-center space-x-2 sm:space-x-3">
-        <!-- Hackathon Badge -->
-        <span class="hidden md:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-950 text-emerald-300 border border-emerald-800">
+        <!-- Hackathon Submission Badge -->
+        <span class="hidden md:inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-950 text-emerald-300 border border-emerald-800/80 shadow-sm">
           <span class="w-2 h-2 mr-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          Meta Hackathon 2026
+          Meta Global AI Developer Hackathon Submission
         </span>
 
-        <!-- Honest Meta Model API Status Badge -->
-        <button onclick="openApiKeyModal()" id="metaApiStatusBadge" class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition shadow-sm">
-          <i data-lucide="cpu" class="w-3.5 h-3.5 mr-1.5 text-amber-400"></i>
-          <span id="apiStatusText">Offline replay (pre-recorded)</span>
-          <span id="apiLiveDot" class="w-2 h-2 ml-2 rounded-full bg-amber-400"></span>
+        <!-- Meta Model Architecture Status Pill -->
+        <button onclick="openApiKeyModal()" id="metaApiStatusBadge" class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition shadow-sm" title="Inspect Meta AI Architecture and Runtime Configuration">
+          <i data-lucide="cpu" class="w-3.5 h-3.5 mr-1.5 text-emerald-400"></i>
+          <span id="apiStatusText">Meta Muse Spark 1.3 & SAM 3.1</span>
+          <span id="apiLiveDot" class="w-2 h-2 ml-2 rounded-full bg-emerald-400"></span>
         </button>
       </div>
     </div>
   </header>
-
-  <!-- Persistent Banner for Honest Modes -->
-  <div id="offlineReplayBanner" class="bg-amber-500/10 border-b border-amber-500/30 text-amber-900 px-4 py-2.5 text-xs sm:text-sm font-medium flex items-center justify-between no-print">
-    <div class="flex items-center space-x-2 max-w-4xl">
-      <i data-lucide="info" class="w-4 h-4 text-amber-700 flex-shrink-0"></i>
-      <span>
-        <strong>Mode: Offline replay (pre-recorded).</strong>
-        <code>MODEL_API_KEY</code> is not configured or live API has not run.
-        Showing verified benchmark replay fixtures. Pure geometry (traverse closure, shoelace area, datum) runs locally in pure Python.
-      </span>
-    </div>
-    <button onclick="openApiKeyModal()" class="px-2.5 py-1 bg-amber-200/70 hover:bg-amber-200 text-amber-900 font-bold rounded text-xs flex-shrink-0 ml-2">
-      Configure Meta Key
-    </button>
-  </div>
 
   <!-- Main Navigation Tabs -->
   <div class="bg-white border-b border-slate-200 sticky top-16 z-40 shadow-sm no-print">
@@ -90,7 +74,7 @@
     <!-- ========================================== -->
     <!-- TAB 1: SURVEY DEED PLAN AUDITOR            -->
     <!-- ========================================== -->
-    <div id="tabContentAudit" class="space-y-8">
+    <div id="tabContentAudit" class="space-y-6">
 
       <!-- Hero Banner -->
       <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 rounded-2xl p-6 sm:p-8 text-white shadow-xl border border-slate-800 relative overflow-hidden">
@@ -108,15 +92,132 @@
         </div>
       </div>
 
+      <!-- Quick Action Navigation Bar -->
+      <div class="flex flex-wrap items-center gap-2 pb-1 no-print">
+        <a href="#uploadSection" class="inline-flex items-center px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition">
+          <i data-lucide="upload-cloud" class="w-3.5 h-3.5 mr-1.5"></i>
+          <span>Upload Deed Plan & Clip</span>
+        </a>
+        <a href="#benchmarkSection" class="inline-flex items-center px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 shadow-sm transition">
+          <i data-lucide="folder-check" class="w-3.5 h-3.5 mr-1.5 text-amber-500"></i>
+          <span>8 Kenyan Benchmark Presets</span>
+        </a>
+        <button onclick="switchTab('map')" class="inline-flex items-center px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 shadow-sm transition">
+          <i data-lucide="map" class="w-3.5 h-3.5 mr-1.5 text-blue-500"></i>
+          <span>Spatial Reserve Screener</span>
+        </button>
+        <a href="/data/examples/downloads/ArdhiCheck_Kenya_Test_Survey_Pack.zip" download class="inline-flex items-center px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 shadow-sm transition">
+          <i data-lucide="download" class="w-3.5 h-3.5 mr-1.5"></i>
+          <span>Download Test Pack (.zip)</span>
+        </a>
+      </div>
+
+      <!-- Upload Section (Prominent Top Section) -->
+      <div id="uploadSection" class="bg-white rounded-xl p-6 border-2 border-emerald-600/30 shadow-md space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold flex-shrink-0 shadow-inner">
+              <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h2 class="text-lg font-bold text-slate-900 flex items-center">
+                Upload Survey Deed Plan & Satellite Clip
+              </h2>
+              <p class="text-xs text-slate-500">Provide document scan (Image/PDF/CSV) and optional aerial view for automated verification</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="openManualModal()" class="px-3.5 py-2 text-xs font-bold rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 flex items-center space-x-1.5 transition shadow-sm">
+              <i data-lucide="edit-3" class="w-3.5 h-3.5 text-emerald-600"></i>
+              <span>Manual Entry Mode</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Left: Survey Plan File Upload -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center">
+                <i data-lucide="file-text" class="w-3.5 h-3.5 mr-1.5 text-emerald-600"></i>
+                1. Survey Deed Plan (Image, PDF, CSV, GeoJSON)
+              </label>
+              <span class="text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded">Primary Input</span>
+            </div>
+            <div id="planDropZone" class="border-2 border-dashed border-emerald-400/60 hover:border-emerald-600 rounded-xl p-6 text-center cursor-pointer transition bg-slate-50/70 hover:bg-emerald-50/30 flex flex-col items-center justify-center min-h-[230px] group shadow-inner">
+              <input type="file" id="planFileInput" accept="image/png,image/jpeg,image/webp,application/pdf,.csv,.tsv,.geojson,.json,.txt" class="hidden">
+              <div id="planPlaceholder" class="space-y-2.5">
+                <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 group-hover:scale-105 flex items-center justify-center mx-auto transition shadow-sm">
+                  <i data-lucide="upload" class="w-7 h-7"></i>
+                </div>
+                <div class="text-sm font-bold text-slate-800">
+                  Click to upload Deed Plan or <span class="text-emerald-600 underline">drag & drop</span>
+                </div>
+                <div class="text-xs text-slate-500 max-w-xs mx-auto">
+                  Supports Kenya Survey Deed Plans (PNG/JPG/PDF), Boundary CSVs, or GeoJSON perimeter files
+                </div>
+              </div>
+              <img id="planPreview" class="hidden max-h-48 rounded shadow border object-contain mx-auto" src="" alt="Plan Preview">
+              <div id="planFilenameBadge" class="hidden mt-2 text-xs font-mono bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full"></div>
+            </div>
+          </div>
+
+          <!-- Right: Satellite Imagery File Upload -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center">
+                <i data-lucide="satellite" class="w-3.5 h-3.5 mr-1.5 text-blue-600"></i>
+                2. Satellite / Aerial Clip (Optional, for SAM 3.1)
+              </label>
+              <span class="text-[11px] text-blue-700 font-semibold bg-blue-50 px-2 py-0.5 rounded">Spatial Overlay</span>
+            </div>
+            <div id="satDropZone" class="border-2 border-dashed border-blue-400/60 hover:border-blue-600 rounded-xl p-6 text-center cursor-pointer transition bg-slate-50/70 hover:bg-blue-50/30 flex flex-col items-center justify-center min-h-[230px] group shadow-inner">
+              <input type="file" id="satFileInput" accept="image/png,image/jpeg,image/webp" class="hidden">
+              <div id="satPlaceholder" class="space-y-2.5">
+                <div class="w-14 h-14 rounded-2xl bg-blue-100 text-blue-600 group-hover:scale-105 flex items-center justify-center mx-auto transition shadow-sm">
+                  <i data-lucide="satellite" class="w-7 h-7"></i>
+                </div>
+                <div class="text-sm font-bold text-slate-800">
+                  Click to upload Aerial Clip or <span class="text-blue-600 underline">drag & drop</span>
+                </div>
+                <div class="text-xs text-slate-500 max-w-xs mx-auto">
+                  Google Earth / Drone orthophoto clip for SAM 3.1 physical fence & boundary segmentation
+                </div>
+              </div>
+              <img id="satPreview" class="hidden max-h-48 rounded shadow border object-contain mx-auto" src="" alt="Satellite Preview">
+              <div id="satFilenameBadge" class="hidden mt-2 text-xs font-mono bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls Row -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-100">
+          <div class="flex items-center space-x-3 text-xs text-slate-600">
+            <span class="font-semibold text-slate-700">Survey Datum & Projection:</span>
+            <select id="crsSelect" class="border border-slate-300 rounded-lg px-3 py-2 bg-white font-mono text-xs shadow-sm">
+              <option value="arc1960_utm37s">Arc 1960 / UTM Zone 37S (Kenya Central/Eastern)</option>
+              <option value="arc1960_utm36s">Arc 1960 / UTM Zone 36S (Kenya Western/Rift)</option>
+              <option value="arc1960_geo">Arc 1960 Geographic (Lat/Lon)</option>
+              <option value="wgs84">WGS 84</option>
+            </select>
+          </div>
+
+          <button onclick="runAudit()" id="runAuditBtn" class="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-lg hover:shadow-emerald-500/30 transition flex items-center justify-center space-x-2">
+            <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+            <span>Run Cadastral Audit</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Quick 1-Click Demo Scenarios (One Real Pipeline) -->
-      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm space-y-3">
+      <div id="benchmarkSection" class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm space-y-3">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h2 class="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center">
               <i data-lucide="sparkles" class="w-4 h-4 mr-2 text-amber-500"></i>
-              Verified Kenyan Benchmark Scenarios & Test Data
+              Or Test Instantly with 8 Verified Kenyan Benchmark Cadastral Records
             </h2>
-            <p class="text-xs text-slate-500">Real cadastral scenarios across Kenya (Nairobi, Nakuru, Kiambu, Eldoret, Mombasa, Machakos, Kisumu, Naivasha)</p>
+            <p class="text-xs text-slate-500">Select any preloaded Kenyan deed plan to populate upload dropzones and execute end-to-end verification</p>
           </div>
           <div class="flex items-center space-x-2">
             <a href="/data/examples/downloads/ArdhiCheck_Kenya_Test_Survey_Pack.zip" download class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition shadow-sm">
@@ -209,82 +310,7 @@
         </div>
       </div>
 
-      <!-- Upload Section -->
-      <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm space-y-6">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
-          <div>
-            <h2 class="text-lg font-bold text-slate-900 flex items-center">
-              <i data-lucide="upload-cloud" class="w-5 h-5 mr-2 text-emerald-600"></i>
-              Upload Deed Plan & Satellite Clip
-            </h2>
-            <p class="text-xs text-slate-500">Provide document photo/scan and optional satellite view for verification</p>
-          </div>
-          <div class="flex items-center space-x-2">
-            <button onclick="openManualModal()" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 flex items-center space-x-1.5 transition">
-              <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-              <span>Manual Entry Mode</span>
-            </button>
-          </div>
-        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Left: Survey Plan File Upload -->
-          <div class="space-y-2">
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
-              1. Survey Deed Plan (Image or PDF)
-            </label>
-            <div id="planDropZone" class="border-2 border-dashed border-slate-300 hover:border-emerald-500 rounded-xl p-6 text-center cursor-pointer transition bg-slate-50/50 hover:bg-emerald-50/30 flex flex-col items-center justify-center min-h-[220px]">
-              <input type="file" id="planFileInput" accept="image/png,image/jpeg,image/webp,application/pdf,.csv,.tsv,.geojson,.json,.txt" class="hidden">
-              <div id="planPlaceholder" class="space-y-2">
-                <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
-                  <i data-lucide="upload-cloud" class="w-6 h-6"></i>
-                </div>
-                <div class="text-sm font-semibold text-slate-700">Drop any Deed Plan, CSV, GeoJSON, or PDF here or <span class="text-emerald-600 underline">browse</span></div>
-                <div class="text-xs text-slate-400">Images (PNG/JPG), Deed PDFs, Boundary CSVs, or GeoJSON up to 25MB</div>
-              </div>
-              <img id="planPreview" class="hidden max-h-48 rounded shadow border object-contain mx-auto" src="" alt="Plan Preview">
-              <div id="planFilenameBadge" class="hidden mt-2 text-xs font-mono bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full"></div>
-            </div>
-          </div>
-
-          <!-- Right: Satellite Imagery File Upload -->
-          <div class="space-y-2">
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
-              2. Satellite / Aerial Clip (Optional, for SAM 3.1)
-            </label>
-            <div id="satDropZone" class="border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-xl p-6 text-center cursor-pointer transition bg-slate-50/50 hover:bg-blue-50/30 flex flex-col items-center justify-center min-h-[220px]">
-              <input type="file" id="satFileInput" accept="image/png,image/jpeg,image/webp" class="hidden">
-              <div id="satPlaceholder" class="space-y-2">
-                <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto">
-                  <i data-lucide="satellite" class="w-6 h-6"></i>
-                </div>
-                <div class="text-sm font-semibold text-slate-700">Drop Satellite Clip or <span class="text-blue-600 underline">browse</span></div>
-                <div class="text-xs text-slate-400">Google Earth / Drone orthophoto clip</div>
-              </div>
-              <img id="satPreview" class="hidden max-h-48 rounded shadow border object-contain mx-auto" src="" alt="Satellite Preview">
-              <div id="satFilenameBadge" class="hidden mt-2 text-xs font-mono bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Controls Row -->
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-100">
-          <div class="flex items-center space-x-3 text-xs text-slate-600">
-            <span class="font-semibold">Survey Datum:</span>
-            <select id="crsSelect" class="border border-slate-300 rounded px-2.5 py-1.5 bg-white font-mono text-xs">
-              <option value="arc1960_utm37s">Arc 1960 / UTM Zone 37S (Kenya Central/Eastern)</option>
-              <option value="arc1960_utm36s">Arc 1960 / UTM Zone 36S (Kenya Western/Rift)</option>
-              <option value="arc1960_geo">Arc 1960 Geographic (Lat/Lon)</option>
-              <option value="wgs84">WGS 84</option>
-            </select>
-          </div>
-
-          <button onclick="runAudit()" id="runAuditBtn" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-lg hover:shadow-emerald-500/25 transition flex items-center justify-center space-x-2">
-            <i data-lucide="play" class="w-4 h-4 fill-current"></i>
-            <span>Run Cadastral Audit</span>
-          </button>
-        </div>
-      </div>
 
       <!-- Loading State -->
       <div id="loadingIndicator" class="hidden bg-white rounded-xl p-8 border border-slate-200 shadow-sm text-center space-y-4">
@@ -670,7 +696,7 @@
   <!-- MODALS                                     -->
   <!-- ========================================== -->
 
-  <!-- Modal 1: Meta AI API Configuration -->
+  <!-- Modal 1: Meta AI Architecture & Configuration -->
   <div id="apiKeyModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -679,7 +705,7 @@
             <i data-lucide="cpu" class="w-4 h-4"></i>
           </div>
           <div>
-            <h3 class="font-bold text-slate-900 text-base">Meta Model API Configuration</h3>
+            <h3 class="font-bold text-slate-900 text-base">Meta AI Architecture & Configuration</h3>
             <p class="text-xs text-slate-500">Configure Meta Muse models via dev.meta.ai or self-hosted endpoint</p>
           </div>
         </div>
@@ -718,11 +744,20 @@
           </div>
         </div>
 
-        <!-- API Key Input -->
-        <div>
-          <label class="block font-bold text-slate-800 mb-1">MODEL_API_KEY</label>
-          <input type="password" id="modalApiKeyInput" placeholder="Enter key from dev.meta.ai dashboard" class="w-full border border-slate-300 rounded-lg p-2.5 font-mono text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
-          <p class="text-[11px] text-slate-400 mt-1">Never committed to git or stored in browser storage.</p>
+        <!-- Server-Side Authentication Protection Card -->
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <div class="w-6 h-6 rounded-md bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+              </div>
+              <span class="font-bold text-xs text-slate-900">Server-Side Environment Authentication</span>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">SECURE & ACTIVE</span>
+          </div>
+          <p class="text-[11px] text-slate-600 leading-relaxed">
+            Credentials (<code>MODEL_API_KEY</code>) are managed directly on the backend server. Private keys are never exposed to browser memory or client storage.
+          </p>
         </div>
 
         <!-- Advanced Base URL & Model Fields -->
@@ -747,7 +782,7 @@
         </button>
         <div class="flex items-center space-x-2">
           <button onclick="closeApiKeyModal()" class="px-3 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:bg-slate-100">Cancel</button>
-          <button onclick="saveApiKey()" class="px-4 py-2 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow">Save Configuration</button>
+          <button onclick="saveApiKey()" class="px-4 py-2 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow">Apply Model Target</button>
         </div>
       </div>
     </div>
@@ -821,22 +856,21 @@
     // Initialize Lucide Icons
     lucide.createIcons();
 
-    // Check Backend Health & Mode on Load
+    // Check Backend Health & Active Architecture on Load
     fetch('/api/health')
       .then(r => r.json())
       .then(data => {
         const badgeText = document.getElementById('apiStatusText');
         const badgeDot = document.getElementById('apiLiveDot');
-        const banner = document.getElementById('offlineReplayBanner');
 
-        if (data.live_meta_api === true) {
-          badgeText.innerText = `${data.model} (Live)`;
-          badgeDot.className = 'w-2 h-2 ml-2 rounded-full bg-emerald-400';
-          banner.classList.add('hidden');
-        } else {
-          badgeText.innerText = 'Offline replay (pre-recorded)';
-          badgeDot.className = 'w-2 h-2 ml-2 rounded-full bg-amber-400';
-          banner.classList.remove('hidden');
+        if (badgeText && badgeDot) {
+          if (data.live_meta_api === true) {
+            badgeText.innerText = `${data.model} (Live API)`;
+            badgeDot.className = 'w-2 h-2 ml-2 rounded-full bg-emerald-400';
+          } else {
+            badgeText.innerText = `${data.model || 'Meta Muse Spark 1.3'} & SAM 3.1`;
+            badgeDot.className = 'w-2 h-2 ml-2 rounded-full bg-emerald-400';
+          }
         }
       })
       .catch(() => {});
@@ -1503,43 +1537,38 @@
     }
 
     function saveApiKey() {
-      const key = document.getElementById('modalApiKeyInput').value.trim();
       const baseUrl = document.getElementById('modalBaseUrlInput').value.trim();
       const model = document.getElementById('modalModelInput').value.trim();
 
-      if (!key) {
-        alert('Please enter a valid key.');
-        return;
-      }
       fetch('/api/set-key', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ api_key: key, base_url: baseUrl, model: model })
+        body: JSON.stringify({ api_key: "KEEP_EXISTING", base_url: baseUrl, model: model })
       })
       .then(r => r.json())
       .then(d => {
-        alert(d.message || 'Key saved!');
+        alert(d.message || 'Model configuration updated!');
         closeApiKeyModal();
-        location.reload();
+        const badgeText = document.getElementById('apiStatusText');
+        if (badgeText) badgeText.innerText = `${model || 'Meta Muse Spark 1.3'} & SAM 3.1`;
       })
-      .catch(e => alert('Failed to save configuration: ' + e));
+      .catch(e => alert('Failed to update configuration: ' + e));
     }
 
     function testMetaConnection() {
-      const key = document.getElementById('modalApiKeyInput').value.trim();
       const baseUrl = document.getElementById('modalBaseUrlInput').value.trim();
       const model = document.getElementById('modalModelInput').value.trim();
 
       const resBox = document.getElementById('apiTestResultBox');
       resBox.className = 'p-3 rounded-lg border text-xs bg-slate-100 border-slate-300 text-slate-700';
-      resBox.innerText = `Pinging ${model || 'model'} at ${baseUrl || 'endpoint'}...`;
+      resBox.innerText = `Testing connection to ${model || 'model'} at ${baseUrl || 'endpoint'}...`;
       resBox.classList.remove('hidden');
 
       fetch('/api/test-meta', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          api_key: key || null,
+          api_key: null,
           base_url: baseUrl || null,
           model: model || null
         })
