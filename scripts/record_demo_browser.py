@@ -153,9 +153,9 @@ async def run_walkthrough_and_record():
         await cdp.evaluate("openApiKeyModal()")
         await record_frame("02_meta_models_modal", hold_seconds=3.0)
 
-        # Change to open-weights
+        # Change to Baseten Muse Spark Open
         await cdp.evaluate(
-            "document.getElementById('modalProviderSelect').value = 'spark_open';"
+            "document.getElementById('modalProviderSelect').value = 'baseten_spark_open';"
             "onProviderChange()"
         )
         await record_frame("03_open_weights_spark_open", hold_seconds=2.0)
@@ -165,6 +165,11 @@ async def run_walkthrough_and_record():
             "onProviderChange()"
         )
         await record_frame("04_meta_official_selected", hold_seconds=1.5)
+
+        await cdp.evaluate(
+            "document.getElementById('modalProviderSelect').value = 'baseten_spark_open';"
+            "onProviderChange()"
+        )
         await cdp.evaluate("closeApiKeyModal()")
         await asyncio.sleep(1.0)
 

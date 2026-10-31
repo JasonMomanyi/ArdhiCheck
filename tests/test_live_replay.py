@@ -26,7 +26,11 @@ def test_replay_saved_spark_fixture() -> None:
     mock_resp.json.return_value = raw_response
     mock_resp.headers = {"x-request-id": raw_response.get("id", "live_test_id")}
 
-    client = MetaModelClient(api_key="mock_live_test_key_for_replay")
+    client = MetaModelClient(
+        api_key="mock_live_test_key_for_replay",
+        model="muse-spark-1.3",
+        base_url="https://api.meta.ai/v1",
+    )
     client.client.post = MagicMock(return_value=mock_resp)
 
     # Load plan image bytes
@@ -50,7 +54,11 @@ def test_disk_cache_zero_cost_replay() -> None:
     plan_path = Path("data/examples/scenario_1_clean_plan.png")
     image_bytes = plan_path.read_bytes()
 
-    client = MetaModelClient(api_key="mock_key")
+    client = MetaModelClient(
+        api_key="mock_key",
+        model="muse-spark-1.3",
+        base_url="https://api.meta.ai/v1",
+    )
     # Disallow network calls by mocking post to fail if called
     client.client.post = MagicMock(side_effect=RuntimeError("Network should not be called!"))
 

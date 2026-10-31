@@ -54,7 +54,7 @@ def test_server_health_handler():
     assert status == 200
     data = json.loads(body.decode("utf-8"))
     assert data["status"] == "healthy"
-    assert "muse-spark-1.3" in data["model"]
+    assert "muse-spark" in data["model"]
     assert "disclaimer" in data
     assert "Not legal advice" in data["disclaimer"]
 
@@ -121,13 +121,15 @@ def test_server_test_meta_demo_handler():
         data = json.loads(body.decode("utf-8"))
         assert data["connected"] is False
         assert data["status"] == "Offline replay (pre-recorded)"
-        assert data["model"] == "muse-spark-1.3"
+        assert "muse-spark" in data["model"]
     finally:
         if old_key is not None:
             os.environ["MODEL_API_KEY"] = old_key
 
 
 def test_server_set_key_handler():
+    dotenv_path = Path(".env")
+    old_dotenv_text = dotenv_path.read_text(encoding="utf-8") if dotenv_path.is_file() else None
     old_key = os.environ.get("MODEL_API_KEY")
     try:
         payload = json.dumps({"api_key": "test_key_update"}).encode("utf-8")
@@ -142,3 +144,5 @@ def test_server_set_key_handler():
             os.environ["MODEL_API_KEY"] = old_key
         else:
             os.environ.pop("MODEL_API_KEY", None)
+        if old_dotenv_text is not None:
+            dotenv_path.write_text(old_dotenv_text, encoding="utf-8")

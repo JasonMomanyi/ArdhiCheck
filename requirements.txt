@@ -1,0 +1,6 @@
+# ArdhiCheck Production Requirements for Vercel / Cloud Run
+numpy>=1.24.0
+pyproj>=3.5.0
+shapely>=2.0.0
+httpx>=0.25.0
+pillow>=10.0.0

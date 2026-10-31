@@ -25,7 +25,7 @@ class TestPipelineScenarios:
         assert "provenance" in result
         prov = result["provenance"]
         src = prov["extraction"]["source"]
-        assert "muse-spark-1.3" in src or "Offline replay" in src
+        assert "muse-spark" in src or "Offline replay" in src
         assert prov["geometry"]["source"] == "app.geo (pure Python, 0 tokens)"
         assert "disclaimer" in result
         assert "Not legal advice" in result["disclaimer"]

@@ -2,7 +2,8 @@
 
 Provides REST API endpoints and serves the modern frontend application.
 Uses Python standard library http.server for zero external runtime web dependencies.
-Strictly adheres to Meta Hackathon rules:
+Strictly adh2
+eres to :
 - Meta Muse models (muse-spark-1.3, optional muse-spark-open) and SAM 3.1.
 - Honest offline replay reporting when live key is not configured.
 - No valuation or buyer advice.

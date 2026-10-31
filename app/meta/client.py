@@ -56,7 +56,7 @@ def load_env_file(dotenv_path: Path | str = ".env") -> None:
                 k, v = line.split("=", 1)
                 k = k.strip()
                 v = v.strip().strip("\"'")
-                if k and k not in os.environ:
+                if k:
                     os.environ[k] = v
     except Exception:
         pass
@@ -141,7 +141,7 @@ def save_cached_response(cache_key: str, data: dict[str, Any]) -> None:
 
 
 def extract_output_text(data: dict[str, Any]) -> str:
-    """Extract visible response text from dev.meta.ai Responses API payload."""
+    """Extract visible response text from dev.meta.ai Responses API or OpenAI format."""
     if "output_text" in data and isinstance(data["output_text"], str):
         return data["output_text"]
     for block in data.get("output", []):
@@ -151,7 +151,13 @@ def extract_output_text(data: dict[str, Any]) -> str:
                     return content_item.get("text", "")
     choices = data.get("choices", [])
     if choices and "message" in choices[0]:
-        return choices[0]["message"].get("content", "")
+        msg = choices[0]["message"]
+        content = msg.get("content")
+        if content:
+            return content
+        reasoning = msg.get("reasoning_content")
+        if reasoning:
+            return reasoning
     return ""
 
 
@@ -216,7 +222,7 @@ class MetaModelClient:
         return bool(self.api_key and len(self.api_key) > 5)
 
     def test_connection(self) -> dict[str, Any]:
-        """Test connection to the Meta Model API Responses endpoint."""
+        """Test connection to the Meta Model API Responses or OpenAI-compatible endpoint."""
         if not self.is_live:
             return {
                 "connected": False,
@@ -233,20 +239,48 @@ class MetaModelClient:
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
         }
-        payload = {
-            "model": self.model,
-            "input": "ArdhiCheck system ping. Respond with 'Online - Meta Model Ready'.",
-            "max_output_tokens": 1000,
-            "reasoning": {"effort": "minimal"},
-        }
+        is_openai_compat = "api.meta.ai" not in self.base_url
+        ping_text = "ArdhiCheck system ping. Respond with 'Online - Meta Model Ready'."
+
+        if is_openai_compat:
+            endpoint = f"{self.base_url}/chat/completions"
+            payload = {
+                "model": self.model,
+                "messages": [{"role": "user", "content": ping_text}],
+                "max_tokens": 1000,
+            }
+        else:
+            endpoint = f"{self.base_url}/responses"
+            payload = {
+                "model": self.model,
+                "input": ping_text,
+                "max_output_tokens": 1000,
+                "reasoning": {"effort": "minimal"},
+            }
+
         start_time = time.time()
         try:
             resp = self.client.post(
-                f"{self.base_url}/responses",
+                endpoint,
                 headers=headers,
                 json=payload,
-                timeout=20.0,
+                timeout=25.0,
             )
+            # Automatic failover: if /responses returned 404, try /chat/completions
+            if resp.status_code == 404 and not is_openai_compat:
+                endpoint = f"{self.base_url}/chat/completions"
+                payload = {
+                    "model": self.model,
+                    "messages": [{"role": "user", "content": ping_text}],
+                    "max_tokens": 1000,
+                }
+                resp = self.client.post(
+                    endpoint,
+                    headers=headers,
+                    json=payload,
+                    timeout=25.0,
+                )
+
             latency_ms = int((time.time() - start_time) * 1000)
             if resp.status_code == 200:
                 data = resp.json()
@@ -331,25 +365,42 @@ class MetaModelClient:
             "Content-Type": "application/json",
         }
 
-        # Dev.meta.ai Responses API format
-        payload = {
-            "model": self.model,
-            "input": [
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "input_text", "text": prompt_instruction},
-                        {"type": "input_image", "image_url": data_url},
-                    ],
-                }
-            ],
-            "max_output_tokens": 2048,
-            "reasoning": {"effort": "minimal"},
-        }
+        is_openai_compat = "api.meta.ai" not in self.base_url
+        if is_openai_compat:
+            endpoint = f"{self.base_url}/chat/completions"
+            payload = {
+                "model": self.model,
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt_instruction},
+                            {"type": "image_url", "image_url": {"url": data_url}},
+                        ],
+                    }
+                ],
+                "max_tokens": 2048,
+            }
+        else:
+            endpoint = f"{self.base_url}/responses"
+            payload = {
+                "model": self.model,
+                "input": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "input_text", "text": prompt_instruction},
+                            {"type": "input_image", "image_url": data_url},
+                        ],
+                    }
+                ],
+                "max_output_tokens": 2048,
+                "reasoning": {"effort": "minimal"},
+            }
 
         start_time = time.time()
         resp = self.client.post(
-            f"{self.base_url}/responses",
+            endpoint,
             headers=headers,
             json=payload,
             timeout=60.0,
@@ -682,15 +733,25 @@ class MetaModelClient:
                     "Authorization": f"Bearer {self.api_key}",
                     "Content-Type": "application/json",
                 }
-                payload = {
-                    "model": self.model,
-                    "input": prompt,
-                    "max_output_tokens": 1500,
-                    "reasoning": {"effort": "minimal"},
-                }
+                is_openai_compat = "api.meta.ai" not in self.base_url
+                if is_openai_compat:
+                    endpoint = f"{self.base_url}/chat/completions"
+                    payload = {
+                        "model": self.model,
+                        "messages": [{"role": "user", "content": prompt}],
+                        "max_tokens": 1500,
+                    }
+                else:
+                    endpoint = f"{self.base_url}/responses"
+                    payload = {
+                        "model": self.model,
+                        "input": prompt,
+                        "max_output_tokens": 1500,
+                        "reasoning": {"effort": "minimal"},
+                    }
                 start_time = time.time()
                 resp = self.client.post(
-                    f"{self.base_url}/responses",
+                    endpoint,
                     headers=headers,
                     json=payload,
                     timeout=35.0,
