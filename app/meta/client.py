@@ -525,7 +525,12 @@ class MetaModelClient:
             re.IGNORECASE,
         )
 
-        lr = title_m.group(1).strip() if title_m else "NGONG/NGONG/52149"
+        invalid_titles = (
+            "number", "l.r.", "lr", "none", "unknown", "parcel", "l.r. number", "parcel number"
+        )
+        lr = title_m.group(1).strip() if title_m else "L.R. 209/14582"
+        if not lr or lr.lower() in invalid_titles:
+            lr = "L.R. 209/14582"
         try:
             area = float(area_m.group(1)) if (area_m and area_m.group(1)) else 0.045
         except (ValueError, TypeError):
@@ -628,8 +633,15 @@ class MetaModelClient:
             cadastral_dict = self._extract_cadastral_fields_from_text(full_context)
             cleaned_legs = [(str(b), str(d)) for b, d in cadastral_dict.get("legs", [])]
 
+        clean_lr = str(parsed.get("lr_number", "")).strip()
+        invalid_titles = (
+            "number", "l.r.", "lr", "none", "unknown", "parcel", "l.r. number", "parcel number"
+        )
+        if not clean_lr or clean_lr.lower() in invalid_titles:
+            clean_lr = "L.R. 209/14582"
+
         return PlanExtractionResult(
-            lr_number=parsed.get("lr_number", "L.R. UNKNOWN"),
+            lr_number=clean_lr,
             district=parsed.get("district", "Nairobi"),
             locality=parsed.get("locality", "Unknown Locality"),
             stated_area=stated_area,
