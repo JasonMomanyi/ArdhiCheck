@@ -259,12 +259,39 @@ class MetaModelClient:
         env_base = os.environ.get("MODEL_BASE_URL", "").strip()
         self.base_url = (base_url or env_base or META_API_BASE_URL).rstrip("/")
         self.model = model or os.environ.get("MODEL_NAME", "").strip() or DEFAULT_MODEL
-        if "fireworks.ai" in self.base_url and self.model in (
-            "muse-spark-open",
-            "meta-models/muse-spark-open",
-        ):
-            self.model = "accounts/fireworks/models/muse-spark-open"
-        self.client = httpx.Client(timeout=60.0)
+        self.client = httpx.Client(timeout=45.0)
+
+    def _post_with_retry(
+        self,
+        endpoint: str,
+        headers: dict[str, str],
+        json_payload: dict[str, Any],
+        timeout: float = 45.0,
+        max_retries: int = 2,
+    ) -> httpx.Response:
+        """Execute HTTP POST with timeout and exponential backoff for transient errors."""
+        last_exc: Exception | None = None
+        for attempt in range(max_retries + 1):
+            try:
+                resp = self.client.post(
+                    endpoint,
+                    headers=headers,
+                    json=json_payload,
+                    timeout=timeout,
+                )
+                if resp.status_code in (500, 502, 503, 504) and attempt < max_retries:
+                    time.sleep(1.0 * (attempt + 1))
+                    continue
+                return resp
+            except (httpx.TimeoutException, httpx.ConnectError) as exc:
+                last_exc = exc
+                if attempt < max_retries:
+                    time.sleep(1.0 * (attempt + 1))
+                    continue
+                raise
+        if last_exc:
+            raise last_exc
+        raise RuntimeError("Request failed after retries")
 
     @property
     def is_live(self) -> bool:
@@ -455,11 +482,11 @@ class MetaModelClient:
             }
 
         start_time = time.time()
-        resp = self.client.post(
+        resp = self._post_with_retry(
             endpoint,
             headers=headers,
-            json=payload,
-            timeout=60.0,
+            json_payload=payload,
+            timeout=45.0,
         )
         latency_ms = int((time.time() - start_time) * 1000)
         resp.raise_for_status()
@@ -590,6 +617,17 @@ class MetaModelClient:
         except (ValueError, TypeError):
             stated_area = 0.045
 
+        raw_legs = parsed.get("legs", [])
+        cleaned_legs: list[tuple[str, str]] = []
+        if isinstance(raw_legs, list):
+            for item in raw_legs:
+                if isinstance(item, (list, tuple)) and len(item) >= 2:
+                    cleaned_legs.append((str(item[0]).strip(), str(item[1]).strip()))
+        if len(cleaned_legs) < 3:
+            full_context = f"{content_text}"
+            cadastral_dict = self._extract_cadastral_fields_from_text(full_context)
+            cleaned_legs = [(str(b), str(d)) for b, d in cadastral_dict.get("legs", [])]
+
         return PlanExtractionResult(
             lr_number=parsed.get("lr_number", "L.R. UNKNOWN"),
             district=parsed.get("district", "Nairobi"),
@@ -597,7 +635,7 @@ class MetaModelClient:
             stated_area=stated_area,
             stated_unit=parsed.get("stated_unit", "ha"),
             datum_name=parsed.get("datum_name", "arc1960_utm37s"),
-            legs=[(str(b), str(d)) for b, d in parsed.get("legs", [])],
+            legs=cleaned_legs,
             raw_notes=parsed.get("notes", []),
             source=source,
             model_name=self.model,
@@ -716,10 +754,10 @@ class MetaModelClient:
                 }
 
                 start_time = time.time()
-                resp = self.client.post(
+                resp = self._post_with_retry(
                     f"{self.base_url}/responses",
                     headers=headers,
-                    json=payload,
+                    json_payload=payload,
                     timeout=45.0,
                 )
                 latency_ms = int((time.time() - start_time) * 1000)
@@ -911,10 +949,10 @@ class MetaModelClient:
                         "reasoning": {"effort": "minimal"},
                     }
                 start_time = time.time()
-                resp = self.client.post(
+                resp = self._post_with_retry(
                     endpoint,
                     headers=headers,
-                    json=payload,
+                    json_payload=payload,
                     timeout=35.0,
                 )
                 latency_ms = int((time.time() - start_time) * 1000)

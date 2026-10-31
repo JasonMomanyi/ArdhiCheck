@@ -209,18 +209,38 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
                 try:
                     if "," in plan_b64:
                         plan_b64 = plan_b64.split(",", 1)[1]
-                    plan_bytes = base64.b64decode(plan_b64)
+                    plan_bytes = base64.b64decode(plan_b64, validate=True)
                 except Exception:
-                    pass
+                    self._send_json(
+                        {"error": "Malformed base64 in deed plan upload."},
+                        status=HTTPStatus.BAD_REQUEST,
+                    )
+                    return
 
             sat_bytes = None
             if sat_b64:
                 try:
                     if "," in sat_b64:
                         sat_b64 = sat_b64.split(",", 1)[1]
-                    sat_bytes = base64.b64decode(sat_b64)
+                    sat_bytes = base64.b64decode(sat_b64, validate=True)
                 except Exception:
-                    pass
+                    self._send_json(
+                        {"error": "Malformed base64 in satellite image upload."},
+                        status=HTTPStatus.BAD_REQUEST,
+                    )
+                    return
+
+            if not plan_bytes and not document_text and not manual_legs and not preset_hint:
+                self._send_json(
+                    {
+                        "error": (
+                            "Missing input: Please upload a survey deed plan or "
+                            "enter boundary legs in manual mode."
+                        )
+                    },
+                    status=HTTPStatus.BAD_REQUEST,
+                )
+                return
 
             try:
                 result = run_survey_audit(
@@ -258,10 +278,42 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
 
             raw_coords = payload.get("coords", [])
             riparian_buffer_m = float(payload.get("riparian_buffer_m", 30.0))
+            if not isinstance(raw_coords, list) or len(raw_coords) < 3:
+                self._send_json(
+                    {"error": "Invalid coordinates: At least 3 polygon boundary points required."},
+                    status=HTTPStatus.BAD_REQUEST,
+                )
+                return
+
             coords: list[tuple[float, float]] = []
             for pt in raw_coords:
-                if isinstance(pt, (list, tuple)) and len(pt) >= 2:
-                    coords.append((float(pt[0]), float(pt[1])))
+                if not isinstance(pt, (list, tuple)) or len(pt) < 2:
+                    self._send_json(
+                        {"error": "Invalid coordinate point format. Expected [lon, lat] pairs."},
+                        status=HTTPStatus.BAD_REQUEST,
+                    )
+                    return
+                try:
+                    lon, lat = float(pt[0]), float(pt[1])
+                except (ValueError, TypeError):
+                    self._send_json(
+                        {"error": "Coordinate coordinates must be numeric floats."},
+                        status=HTTPStatus.BAD_REQUEST,
+                    )
+                    return
+                # Check Kenyan territory bounds
+                if not (33.0 <= lon <= 43.0 and -5.5 <= lat <= 6.0):
+                    self._send_json(
+                        {
+                            "error": (
+                                f"Coordinates [{lon:.4f}, {lat:.4f}] are outside "
+                                "Kenyan territory (Long 33-43, Lat -5.5 to 6.0)."
+                            )
+                        },
+                        status=HTTPStatus.BAD_REQUEST,
+                    )
+                    return
+                coords.append((lon, lat))
 
             conflicts = screen_reserves_pure(coords, riparian_buffer_m=riparian_buffer_m)
             self._send_json(
@@ -312,25 +364,11 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
             new_base_url = payload.get("base_url", "").strip()
             new_model = payload.get("model", "").strip()
 
-            if provider == "fireworks_spark_open":
-                new_key = (
-                    new_key
-                    if (new_key and new_key != "KEEP_EXISTING")
-                    else "fw_HZWX8hKB7DMA9paYhonSf3"
-                )
-                new_base_url = "https://api.fireworks.ai/inference/v1"
-                new_model = "accounts/fireworks/models/muse-spark-open"
-            elif provider == "baseten_spark_open":
-                new_key = (
-                    new_key
-                    if (new_key and new_key != "KEEP_EXISTING")
-                    else "Lj9GxCZP.SGorOSXfEujGJPrcn2z1GFDxKPS7pbmC"
-                )
-                new_base_url = "https://inference.baseten.co/v1"
-                new_model = "meta-models/muse-spark-open"
-            elif provider == "meta_official":
+            if provider == "meta_official":
                 new_base_url = "https://api.meta.ai/v1"
                 new_model = "muse-spark-1.3"
+            elif provider == "self_hosted_open":
+                new_model = new_model or "muse-spark-open"
             elif provider == "offline_replay":
                 new_key = ""
                 new_base_url = "https://api.meta.ai/v1"
@@ -345,32 +383,16 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
             if new_model:
                 os.environ["MODEL_NAME"] = new_model
 
-            if new_key or new_base_url or new_model:
-                try:
-                    dotenv_file = BASE_DIR / ".env"
-                    existing_key = os.environ.get("MODEL_API_KEY", "")
-                    env_lines = [f"MODEL_API_KEY={existing_key}\n"]
-                    if new_base_url:
-                        env_lines.append(f"MODEL_BASE_URL={new_base_url}\n")
-                    if new_model:
-                        env_lines.append(f"MODEL_NAME={new_model}\n")
-                    dotenv_file.write_text("".join(env_lines), encoding="utf-8")
-                except Exception:
-                    pass
-                self._send_json(
-                    {
-                        "status": "ok",
-                        "message": (
-                            f"Model configuration updated! Active: {new_model or 'muse-spark-1.3'}"
-                        ),
-                        "model": new_model or "muse-spark-1.3",
-                    }
-                )
-            else:
-                self._send_json(
-                    {"error": "No configuration parameters provided"},
-                    status=HTTPStatus.BAD_REQUEST,
-                )
+            self._send_json(
+                {
+                    "status": "ok",
+                    "message": (
+                        f"Model configuration updated! Active: {new_model or 'muse-spark-1.3'}"
+                    ),
+                    "model": os.environ.get("MODEL_NAME", "muse-spark-1.3"),
+                    "base_url": os.environ.get("MODEL_BASE_URL", "https://api.meta.ai/v1"),
+                }
+            )
             return
 
         self.send_error(HTTPStatus.NOT_FOUND, "Path not found")

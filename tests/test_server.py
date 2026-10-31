@@ -93,6 +93,38 @@ def test_server_check_post_handler():
     assert "disclaimer" in data
 
 
+def test_server_check_empty_payload():
+    payload = json.dumps({}).encode("utf-8")
+    handler = MockServerRequest("POST", "/api/check", body=payload)
+    status, _, body = handler.get_response()
+    assert status == 400
+    data = json.loads(body.decode("utf-8"))
+    assert "error" in data
+    assert "Missing input" in data["error"]
+
+
+def test_server_check_malformed_base64():
+    payload = json.dumps({"plan_image_b64": "invalid_base64_!@#$"}).encode("utf-8")
+    handler = MockServerRequest("POST", "/api/check", body=payload)
+    status, _, body = handler.get_response()
+    assert status == 400
+    data = json.loads(body.decode("utf-8"))
+    assert "error" in data
+    assert "Malformed base64" in data["error"]
+
+
+def test_server_screen_reserves_invalid_coords():
+    # Outside Kenyan bounds
+    coords = [[0.0, 0.0], [1.0, 0.0], [1.0, 1.0]]
+    payload = json.dumps({"coords": coords}).encode("utf-8")
+    handler = MockServerRequest("POST", "/api/screen-reserves", body=payload)
+    status, _, body = handler.get_response()
+    assert status == 400
+    data = json.loads(body.decode("utf-8"))
+    assert "error" in data
+    assert "outside Kenyan" in data["error"]
+
+
 def test_server_static_index_handler():
     handler = MockServerRequest("GET", "/")
     status, _, body = handler.get_response()
