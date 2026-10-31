@@ -33,7 +33,7 @@ ArdhiCheck fills that gap: photograph a plan or enter readings, get a verified a
 ## Demo
 
 - **Live Web Application:** [https://ardhicheck-ivory.vercel.app](https://ardhicheck-ivory.vercel.app)
-- **Local Dev Server:** `http://127.0.0.1:5500`
+- **Demo Video:** `http://127.0.0.1:5500*(I will upload after recording and editing!)`
 
 ## How It Works
 
