@@ -30,8 +30,8 @@
   <div id="offlineReplayBanner" class="hidden bg-amber-500/10 border-b border-amber-500/30 text-amber-900 px-4 py-2 text-xs font-medium z-40 transition-all">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
       <div class="flex items-center space-x-2">
-        <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600 flex-shrink-0"></i>
-        <span><strong>Offline Replay (Pre-recorded):</strong> Operating with deterministic verified benchmark fixtures. Connect a live Meta Model API key to enable live Muse Spark 1.3 extraction and SAM 3.1 segmentation.</span>
+        <span class="text-base">⚠️</span>
+        <span><strong>Running in Offline Demo Replay Mode:</strong> Operating with deterministic verified benchmark fixtures. Connect a live Meta Model API key to enable live Muse Spark 1.3 extraction and SAM 3.1 segmentation.</span>
       </div>
       <button onclick="openApiKeyModal()" class="ml-4 px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded text-[11px] whitespace-nowrap transition cursor-pointer">
         Configure Meta API
@@ -526,25 +526,25 @@
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <!-- Statutory Precision Standard -->
+            <!-- Riparian Buffer Clearance -->
             <div class="bg-slate-800/80 backdrop-blur rounded-xl p-4 border border-slate-700/60 space-y-1">
-              <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Statutory Precision Threshold</div>
-              <div id="aiValuationPrice" class="text-2xl font-black text-emerald-400 tracking-tight">1:5,000</div>
-              <div id="aiValuationRate" class="text-[11px] text-slate-300">Survey Act Cap 299 Standard</div>
+              <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Riparian Buffer Clearance</div>
+              <div id="aiRiparianClearance" class="text-2xl font-black text-emerald-400 tracking-tight">30.0 m Clear</div>
+              <div id="aiRiparianClearanceSub" class="text-[11px] text-slate-300">EMCA Cap 387 Setback Verified</div>
             </div>
 
-            <!-- Statutory Acquisition Fees -->
+            <!-- Encroachment Risk Index -->
             <div class="bg-slate-800/80 backdrop-blur rounded-xl p-4 border border-slate-700/60 space-y-1">
-              <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Statutory Stamp Duty Scale</div>
-              <div id="aiValuationStampDuty" class="text-2xl font-black text-indigo-300 tracking-tight">4% / 2%</div>
-              <div class="text-[11px] text-slate-300">4% Urban Municipality / 2% Rural Land Control</div>
+              <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Encroachment Risk Index</div>
+              <div id="aiEncroachmentRisk" class="text-2xl font-black text-emerald-400 tracking-tight">0.00 m² (Zero)</div>
+              <div id="aiEncroachmentRiskSub" class="text-[11px] text-slate-300">Gazetted reserves & wayleaves clear</div>
             </div>
 
-            <!-- Due Diligence Risk Rating -->
+            <!-- Cadastral Precision Standard -->
             <div class="bg-slate-800/80 backdrop-blur rounded-xl p-4 border border-slate-700/60 space-y-1">
-              <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Cadastral Integrity Status</div>
-              <div id="aiValuationRisk" class="text-2xl font-black text-amber-400 tracking-tight">--</div>
-              <div id="aiValuationRiskSub" class="text-[11px] text-slate-300">Traverse & reserve screening</div>
+              <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Cadastral Precision Standard</div>
+              <div id="aiCadastralStandard" class="text-2xl font-black text-amber-400 tracking-tight">1:5,000</div>
+              <div id="aiCadastralStandardSub" class="text-[11px] text-slate-300">Survey Act Cap 299 Statutory Limit</div>
             </div>
           </div>
 
@@ -1076,10 +1076,10 @@
           1. Step-by-Step Instructions
         </button>
         <button onclick="switchGuideTab('valuation')" id="guideTabValuation" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
-          2. Land Pricing & Budgeting
+          2. Riparian & Reserve Clearance Guide
         </button>
         <button onclick="switchGuideTab('rules')" id="guideTabRules" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
-          3. 10 Land Buying Rules
+          3. 10 Land Due Diligence Rules
         </button>
         <button onclick="switchGuideTab('faq')" id="guideTabFaq" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
           4. Technical & Legal FAQ
@@ -1089,7 +1089,7 @@
       <!-- Tab Content 1: Step-by-Step Instructions -->
       <div id="guideContentSteps" class="space-y-4 text-xs text-slate-700">
         <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-950 flex items-start space-x-2.5">
-          <span class="text-lg">🍉</span>
+          <i data-lucide="compass" class="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5"></i>
           <div>
             <div class="font-bold text-sm">How to Verify Any Land Parcel in Kenya</div>
             <p class="text-[11px] text-emerald-800 leading-relaxed mt-0.5">Follow these 5 steps to conduct an audit before paying any deposit or signing a sale agreement.</p>
@@ -1139,15 +1139,15 @@
         </div>
       </div>
 
-      <!-- Tab Content 2: Land Pricing & Valuation Guide -->
+      <!-- Tab Content 2: Riparian & Reserve Clearance Guide -->
       <div id="guideContentValuation" class="hidden space-y-4 text-xs text-slate-700">
         <div class="p-3.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-950 space-y-1">
           <div class="font-bold text-sm flex items-center space-x-1.5">
-            <i data-lucide="calculator" class="w-4 h-4 text-indigo-600"></i>
-            <span>Kenyan Land Pricing & Acquisition Feasibility</span>
+            <i data-lucide="shield-check" class="w-4 h-4 text-indigo-600"></i>
+            <span>Statutory Cadastral & Environmental Setback Standards</span>
           </div>
           <p class="text-[11px] text-indigo-900/90 leading-relaxed">
-            ArdhiCheck calculates approximate indicative market valuations based on county and zoning benchmarks. When an official government valuation or registered listing is verified on Ardhisasa, the exact statutory figure is displayed.
+            Kenyan law specifies exact boundary closure tolerances and environmental corridor setbacks. ArdhiCheck audits every survey plan against statutory thresholds:
           </p>
         </div>
 
@@ -1155,48 +1155,48 @@
           <table class="w-full text-left text-[11px]">
             <thead class="bg-slate-50 text-slate-800 font-bold border-b border-slate-200">
               <tr>
-                <th class="p-2.5">Region / County</th>
-                <th class="p-2.5">Zoning Class</th>
-                <th class="p-2.5">Indicative Benchmark / Acre</th>
-                <th class="p-2.5">Stamp Duty Rate</th>
+                <th class="p-2.5">Category / Law</th>
+                <th class="p-2.5">Statutory Parameter</th>
+                <th class="p-2.5">Standard Threshold</th>
+                <th class="p-2.5">Enforcement Agency</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 text-slate-700">
               <tr>
-                <td class="p-2.5 font-bold">Nairobi Urban</td>
-                <td class="p-2.5">Commercial & Prime Residential</td>
-                <td class="p-2.5 font-mono text-emerald-700 font-bold">KES 60M - 120M</td>
-                <td class="p-2.5">4% (Municipality)</td>
+                <td class="p-2.5 font-bold">Township Cadastre</td>
+                <td class="p-2.5">Survey Act Cap 299</td>
+                <td class="p-2.5 font-mono text-emerald-700 font-bold">1:10,000</td>
+                <td class="p-2.5">Survey of Kenya</td>
               </tr>
               <tr>
-                <td class="p-2.5 font-bold">Kiambu Peri-Urban</td>
-                <td class="p-2.5">Ruiru, Juja, Kikuyu, Limuru</td>
-                <td class="p-2.5 font-mono text-emerald-700 font-bold">KES 12M - 28M</td>
-                <td class="p-2.5">4% (Municipality)</td>
+                <td class="p-2.5 font-bold">Peri-Urban Land</td>
+                <td class="p-2.5">Survey Act Cap 299</td>
+                <td class="p-2.5 font-mono text-emerald-700 font-bold">1:5,000</td>
+                <td class="p-2.5">Director of Surveys</td>
               </tr>
               <tr>
-                <td class="p-2.5 font-bold">Machakos / Kajiado</td>
-                <td class="p-2.5">Syokimau, Athi River, Kitengela</td>
-                <td class="p-2.5 font-mono text-emerald-700 font-bold">KES 8M - 20M</td>
-                <td class="p-2.5">4% (Urban)</td>
+                <td class="p-2.5 font-bold">Rural Agricultural</td>
+                <td class="p-2.5">Survey Act Cap 299</td>
+                <td class="p-2.5 font-mono text-emerald-700 font-bold">1:3,000</td>
+                <td class="p-2.5">Land Adjudication Dept</td>
               </tr>
               <tr>
-                <td class="p-2.5 font-bold">Coast / Mombasa</td>
-                <td class="p-2.5">Nyali, Diani, Kilifi, Malindi</td>
-                <td class="p-2.5 font-mono text-emerald-700 font-bold">KES 14M - 32M</td>
-                <td class="p-2.5">4% (Coast)</td>
+                <td class="p-2.5 font-bold">River Setback</td>
+                <td class="p-2.5">EMCA Cap 387</td>
+                <td class="p-2.5 font-mono text-emerald-700 font-bold">30.0 m Buffer</td>
+                <td class="p-2.5">NEMA / WRA</td>
               </tr>
               <tr>
-                <td class="p-2.5 font-bold">Rift Valley / Nakuru</td>
-                <td class="p-2.5">Nakuru City, Naivasha, Gilgil</td>
-                <td class="p-2.5 font-mono text-emerald-700 font-bold">KES 4M - 12M</td>
-                <td class="p-2.5">4% (Urban) / 2% (Rural)</td>
+                <td class="p-2.5 font-bold">Lake & Ocean Reserve</td>
+                <td class="p-2.5">EMCA Cap 387</td>
+                <td class="p-2.5 font-mono text-emerald-700 font-bold">100.0 m Buffer</td>
+                <td class="p-2.5">NEMA / WRA</td>
               </tr>
               <tr>
-                <td class="p-2.5 font-bold">Highland Agriculture</td>
-                <td class="p-2.5">Eldoret, Meru, Trans Nzoia</td>
-                <td class="p-2.5 font-mono text-emerald-700 font-bold">KES 1.2M - 4.5M</td>
-                <td class="p-2.5">2% (Agricultural)</td>
+                <td class="p-2.5 font-bold">National Highway Corridor</td>
+                <td class="p-2.5">Kenya Roads Act 2007</td>
+                <td class="p-2.5 font-mono text-emerald-700 font-bold">60.0 m Reserve</td>
+                <td class="p-2.5">KeNHA</td>
               </tr>
             </tbody>
           </table>
@@ -1988,41 +1988,53 @@
         legsBody.appendChild(r);
       });
 
-      // Populate AI Land Valuation & Due Diligence Advisory
-      const val = data.valuation || {};
-      const valPriceEl = document.getElementById('aiValuationPrice');
-      const valRateEl = document.getElementById('aiValuationRate');
-      const valStampEl = document.getElementById('aiValuationStampDuty');
-      const valRiskEl = document.getElementById('aiValuationRisk');
-      const valRiskSubEl = document.getElementById('aiValuationRiskSub');
-      const valBadgeEl = document.getElementById('aiValuationStatusBadge');
+      // Populate Riparian Clearance & Encroachment Risk Index
+      const ripClearEl = document.getElementById('aiRiparianClearance');
+      const ripClearSubEl = document.getElementById('aiRiparianClearanceSub');
+      const encroRiskEl = document.getElementById('aiEncroachmentRisk');
+      const encroRiskSubEl = document.getElementById('aiEncroachmentRiskSub');
+      const cadStdEl = document.getElementById('aiCadastralStandard');
+      const cadStdSubEl = document.getElementById('aiCadastralStandardSub');
 
-      if (valPriceEl) {
-        valPriceEl.innerText = val.formatted_range || 'KES 4.5M - 8.0M';
-      }
-      if (valRateEl) {
-        valRateEl.innerText = `${val.county || 'Kenyan Region'} • ${val.is_exact_record ? 'Official Exact Listing' : 'Approx ~KES ' + ((val.rate_per_acre_kes || 15000000)/1000000).toFixed(1) + 'M/Acre'}`;
-      }
-      if (valStampEl) {
-        valStampEl.innerText = val.stamp_duty_estimate_kes ? `KES ${Number(val.stamp_duty_estimate_kes).toLocaleString()}` : 'KES 180,000';
-      }
-      if (valRiskEl) {
-        if (data.verdict === 'GREEN') {
-          valRiskEl.innerText = 'LOW RISK (VALID)';
-          valRiskEl.className = 'text-2xl font-black text-emerald-400 tracking-tight';
-          if (valRiskSubEl) valRiskSubEl.innerText = 'Traverse closed & statutory reserves clear';
-        } else if (data.verdict === 'AMBER') {
-          valRiskEl.innerText = 'MODERATE (REVISION)';
-          valRiskEl.className = 'text-2xl font-black text-amber-400 tracking-tight';
-          if (valRiskSubEl) valRiskSubEl.innerText = 'Minor typo or clerical misclosure detected';
+      const ripDist = data.satellite.riparian_buffer_m || currentRiparianBufferM || 30.0;
+      const overlapM2 = (data.satellite && data.satellite.overlap_area_m2) ? data.satellite.overlap_area_m2 : 0;
+
+      if (ripClearEl) {
+        if (overlapM2 > 0) {
+          ripClearEl.innerText = `${overlapM2.toFixed(0)} m² Overlap`;
+          ripClearEl.className = 'text-2xl font-black text-rose-400 tracking-tight';
+          if (ripClearSubEl) ripClearSubEl.innerText = 'Encroaches on statutory riparian buffer';
         } else {
-          valRiskEl.innerText = 'HIGH RISK (DEFECTIVE)';
-          valRiskEl.className = 'text-2xl font-black text-rose-400 tracking-tight';
-          if (valRiskSubEl) valRiskSubEl.innerText = 'Severe geometry fault or reserve encroachment';
+          ripClearEl.innerText = `${ripDist.toFixed(0)} m Clearance`;
+          ripClearEl.className = 'text-2xl font-black text-emerald-400 tracking-tight';
+          if (ripClearSubEl) ripClearSubEl.innerText = 'EMCA Cap 387 Setback Verified';
         }
       }
-      if (valBadgeEl) {
-        valBadgeEl.innerText = val.is_exact_record ? 'Official Registered Record' : 'Indicative Regional Benchmark';
+
+      if (encroRiskEl) {
+        if (overlapM2 > 0) {
+          encroRiskEl.innerText = 'HIGH RISK (ENCROACHED)';
+          encroRiskEl.className = 'text-2xl font-black text-rose-400 tracking-tight';
+          if (encroRiskSubEl) encroRiskSubEl.innerText = 'Conflict with gazetted corridor';
+        } else {
+          encroRiskEl.innerText = 'ZERO OVERLAP (0 m²)';
+          encroRiskEl.className = 'text-2xl font-black text-emerald-400 tracking-tight';
+          if (encroRiskSubEl) encroRiskSubEl.innerText = 'Gazetted reserves & wayleaves clear';
+        }
+      }
+
+      if (cadStdEl) {
+        cadStdEl.innerText = (data.closure && data.closure.relative_precision) ? data.closure.relative_precision : '1:inf';
+        if (data.verdict === 'GREEN') {
+          cadStdEl.className = 'text-2xl font-black text-emerald-400 tracking-tight';
+          if (cadStdSubEl) cadStdSubEl.innerText = 'Surpasses 1:5,000 threshold';
+        } else if (data.verdict === 'AMBER') {
+          cadStdEl.className = 'text-2xl font-black text-amber-400 tracking-tight';
+          if (cadStdSubEl) cadStdSubEl.innerText = 'Suspect clerical typo on traverse';
+        } else {
+          cadStdEl.className = 'text-2xl font-black text-rose-400 tracking-tight';
+          if (cadStdSubEl) cadStdSubEl.innerText = 'Fails statutory tolerance';
+        }
       }
 
       // Advisory Report

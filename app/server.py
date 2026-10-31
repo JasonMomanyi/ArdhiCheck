@@ -334,7 +334,11 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
             except Exception:
                 payload = {}
 
-            api_key = payload.get("api_key") or os.environ.get("MODEL_API_KEY", "").strip()
+            api_key = (
+                payload.get("api_key")
+                or os.environ.get("META_AI_API_KEY", "").strip()
+                or os.environ.get("MODEL_API_KEY", "").strip()
+            )
             base_url = payload.get("base_url") or os.environ.get("MODEL_BASE_URL", "").strip()
             model = payload.get("model") or os.environ.get("MODEL_NAME", "").strip()
 

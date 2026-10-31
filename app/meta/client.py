@@ -255,7 +255,11 @@ class MetaModelClient:
         base_url: str | None = None,
         model: str | None = None,
     ) -> None:
-        self.api_key = api_key or os.environ.get("MODEL_API_KEY", "").strip()
+        self.api_key = (
+            api_key
+            or os.environ.get("META_AI_API_KEY", "").strip()
+            or os.environ.get("MODEL_API_KEY", "").strip()
+        )
         env_base = os.environ.get("MODEL_BASE_URL", "").strip()
         self.base_url = (base_url or env_base or META_API_BASE_URL).rstrip("/")
         self.model = model or os.environ.get("MODEL_NAME", "").strip() or DEFAULT_MODEL
