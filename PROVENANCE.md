@@ -24,7 +24,7 @@ An AI coding agent was used for scaffolding, code generation, and development as
 
 ## Sample Documents and Data Rights
 
-All cadastral survey diagrams, deed plan images, and sample documents in this repository are synthetic test fixtures or authorized demonstration materials. The author holds explicit rights and consent to use any sample documents for technical verification testing; use is fully authorized and complies with data protection guidelines. No confidential, proprietary, or unauthorized private land registry records are exposed. Demonstration satellite clips and survey deed plans were synthetically generated to test edge cases (riparian setbacks, clerical blunders, and clean closures).
+All cadastral survey diagrams, deed plan images, and sample documents in this repository are synthetic test fixtures or authorized demonstration materials. The author holds explicit rights and consent to use any sample documents for technical verification testing; use is fully authorized and complies with data protection guidelines. No confidential, proprietary, or unauthorized private land registry records are exposed. Any sample or demonstration documents used during model testing have all personal identifiers, crucial owner details, and sensitive attributes redacted or blurred to protect personal privacy. Demonstration satellite clips and survey deed plans were synthetically generated to test edge cases (riparian setbacks, clerical blunders, and clean closures).
 
 ## Pre-existing code
 

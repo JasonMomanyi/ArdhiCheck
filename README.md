@@ -115,7 +115,7 @@ All code in this repository was developed between 26 Oct and 4 Nov 2026 for the 
 - **Not affiliated with the Ministry of Lands or Ardhisasa.** It does not perform title register searches or access confidential land registry archives.
 - **Not a replacement for a licensed surveyor.** Ground beacon relocation and statutory boundary re-establishment must be performed by a surveyor licensed under the Survey Act (Cap 299).
 - Arc 1960 → WGS84 transforms are accurate to metres only; the app includes an uncertainty note and never claims sub-centimetre precision.
-- Benchmark survey deed plans and satellite clips are synthetic test fixtures designed to evaluate boundary closure and reserve overlap.
+- Benchmark survey deed plans and satellite clips are synthetic test fixtures designed to evaluate boundary closure and reserve overlap. Sample documents used during verification testing have all personal identifiers, crucial owner details, and sensitive attributes redacted or blurred to protect personal privacy.
 
 ## Licences & Layer Attribution
 
