@@ -1,0 +1,22 @@
+# Video and demo recordings
+assets/*.mp4
+recordings/
+*.mp4
+
+# Test and development
+tests/
+eval/
+scratch/
+.pytest_cache/
+.ruff_cache/
+
+# Python virtual environment
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+
+# Git & config
+.git/
+.env*
