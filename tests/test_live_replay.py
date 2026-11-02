@@ -91,6 +91,6 @@ def test_live_meta_api_ping() -> None:
     ):
         pytest.skip(f"Network socket restricted in sandbox: {res.get('message')}")
     assert res["connected"] is True, f"Live ping failed: {res.get('message')}"
-    assert res["model"] == "muse-spark-1.3"
+    assert res["model"] == client.model
     assert res["status"] == "live"
     assert res["latency_ms"] > 0

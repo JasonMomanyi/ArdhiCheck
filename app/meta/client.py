@@ -330,7 +330,7 @@ class MetaModelClient:
             payload = {
                 "model": self.model,
                 "messages": [{"role": "user", "content": ping_text}],
-                "max_tokens": 1000,
+                "max_tokens": 2048,
             }
         else:
             endpoint = f"{self.base_url}/responses"
@@ -402,7 +402,7 @@ class MetaModelClient:
         preset_hint: str | None = None,
     ) -> PlanExtractionResult:
         """Extract survey readings and metadata from plan image bytes."""
-        if self.is_live and image_bytes:
+        if self.is_live and image_bytes and not preset_hint:
             try:
                 return self._extract_live(image_bytes, mime_type)
             except Exception as exc:
@@ -963,7 +963,7 @@ class MetaModelClient:
                             {"role": "system", "content": system_instruction},
                             {"role": "user", "content": prompt},
                         ],
-                        "max_tokens": 1000,
+                        "max_tokens": 2500,
                         "temperature": 0.2,
                     }
                 else:

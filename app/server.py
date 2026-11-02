@@ -387,6 +387,17 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
             base_url = payload.get("base_url") or os.environ.get("MODEL_BASE_URL", "").strip()
             model = payload.get("model") or os.environ.get("MODEL_NAME", "").strip()
 
+            # Check for provider mismatch before making doomed network call
+            if base_url and "api.meta.ai" in base_url and api_key and (api_key.startswith("Lj") or api_key.startswith("fw_")):
+                self._send_json({
+                    "connected": False,
+                    "status": "Authentication Provider Mismatch",
+                    "message": "The dev.meta.ai endpoint requires an official Meta Model API key. The server is currently configured with Baseten credentials for Meta Muse Spark Open. Please select the Baseten Dedicated Host option.",
+                    "model": model,
+                    "base_url": base_url,
+                }, status=HTTPStatus.OK)
+                return
+
             client = MetaModelClient(
                 api_key=api_key or None,
                 base_url=base_url or None,
@@ -426,10 +437,32 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
             new_base_url = payload.get("base_url", "").strip()
             new_model = payload.get("model", "").strip()
 
-            if provider == "meta_official":
+            if provider == "meta_official" or (new_base_url and "api.meta.ai" in new_base_url):
+                cur_key = os.environ.get("MODEL_API_KEY", "").strip()
+                if cur_key and (cur_key.startswith("Lj") or cur_key.startswith("fw_")):
+                    self._send_json(
+                        {
+                            "status": "error",
+                            "message": (
+                                "Cannot switch to dev.meta.ai: The server is currently configured with Baseten credentials for Meta Muse Spark Open. Official dev.meta.ai requires a direct Meta Model API key."
+                            ),
+                            "model": os.environ.get("MODEL_NAME", "meta-models/muse-spark-open"),
+                            "base_url": os.environ.get("MODEL_BASE_URL", "https://inference.baseten.co/v1"),
+                        },
+                        status=HTTPStatus.BAD_REQUEST,
+                    )
+                    return
+
+            if provider == "baseten_live":
+                new_base_url = "https://inference.baseten.co/v1"
+                new_model = "meta-models/muse-spark-open"
+            elif provider == "fireworks_live":
+                new_base_url = "https://api.fireworks.ai/inference/v1"
+                new_model = "accounts/fireworks/models/muse-spark-open"
+            elif provider == "meta_official":
                 new_base_url = "https://api.meta.ai/v1"
                 new_model = "muse-spark-1.3"
-            elif provider == "self_hosted_open":
+            elif provider in ("self_hosted_open", "spark_open"):
                 new_model = new_model or "muse-spark-open"
             elif provider == "offline_replay":
                 new_base_url = "https://api.meta.ai/v1"
