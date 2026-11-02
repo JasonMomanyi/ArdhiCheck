@@ -35,6 +35,18 @@ ArdhiCheck bridges this gap: upload a survey plan or enter readings, get an auto
 - **Live Web Application:** [https://ardhicheck-ivory.vercel.app](https://ardhicheck-ivory.vercel.app)
 - **Demo Video:** [Walkthrough Video (YouTube / Loom) — Under 3:00 min](https://youtu.be/placeholder) *(Update with your unlisted YouTube or Loom link)*
 
+## Meta Technologies Used
+
+ArdhiCheck integrates official Meta models and architectures across its verification pipeline:
+
+| Technology / Model | Role in Pipeline | Endpoint / Runtime |
+|---|---|---|
+| **Meta Muse Spark 1.3** (muse-spark-1.3) | Multimodal survey deed plan extraction & structured output; executive audit report synthesis | Meta Model API (https://api.meta.ai/v1) & Inference host |
+| **Meta SAM 3.1** (sam-3.1) | Text-prompted segmentation of aerial imagery for river buffers and road reserves | Meta Model API (https://api.meta.ai/v1) |
+| **Meta Muse Spark Open** (muse-spark-open) | Self-hosted open-weights fallback option for edge and private server deployments | Custom OpenAI-compatible runtime / Local GPU |
+
+When running without active cloud credentials, ArdhiCheck switches cleanly to offline pre-recorded replays, explicitly flagging Offline replay (pre-recorded) across all UI telemetry.
+
 ## How It Works
 
 1. **Multimodal Document Extraction** – Upload a photo/PDF of an official Kenyan survey deed plan (or select a benchmark scenario). **Meta Muse Spark 1.3** extracts the parcel number, stated acreage, datum, and the schedule of boundary bearings and distances into structured JSON.
@@ -45,16 +57,6 @@ ArdhiCheck bridges this gap: upload a survey plan or enter readings, get an auto
 6. **Report & Provenance** – Outputs an executive audit verdict (GREEN / AMBER / RED / CANNOT VERIFY), mathematical evidence, specific questions to ask the licensed surveyor, and complete execution provenance (model, latency, tokens, request ID) for every field.
 
 The model reads and explains; **pure code calculates**. Every finding in the report cites the exact mathematical calculation behind it.
-
-## Meta Models Used
-
-| Model | Role | Endpoint |
-|---|---|---|
-| **Meta Muse Spark 1.3** (`muse-spark-1.3`) | Multimodal survey deed plan extraction & structured output; executive report synthesis | Official Cloud (`https://api.meta.ai/v1`) / Inference host |
-| **Meta SAM 3.1** (`sam-3.1`) | Text-prompted media segmentation of rivers, water buffers, and protected road reserves | Official Cloud (`https://api.meta.ai/v1`) |
-| **Meta Muse Spark Open** (`muse-spark-open`) | Optional open-weight model self-hosted on your own infrastructure | Custom Host / Local GPU |
-
-When running without an active API key, ArdhiCheck transparently reports `Offline replay (pre-recorded)` across all telemetry fields.
 
 ## Evaluation Results
 
