@@ -46,6 +46,7 @@ htmlcov/
 .ruff_cache/
 
 .vercel
+scratch/
 
 
 # Large video recordings (>100MB exceeds GitHub limit)
