@@ -3,7 +3,6 @@
 import io
 import json
 import os
-from pathlib import Path
 from unittest.mock import MagicMock
 
 from app.server import ArdhiCheckHandler
@@ -12,7 +11,13 @@ from app.server import ArdhiCheckHandler
 class MockServerRequest(ArdhiCheckHandler):
     """Subclass of ArdhiCheckHandler that captures output in memory."""
 
-    def __init__(self, method: str, path: str, body: bytes = b""):
+    def __init__(
+        self,
+        method: str,
+        path: str,
+        body: bytes = b"",
+        custom_headers: dict[str, str] | None = None,
+    ):
         self.rfile = io.BytesIO(body)
         self.wfile = io.BytesIO()
         self.command = method
@@ -23,6 +28,8 @@ class MockServerRequest(ArdhiCheckHandler):
             "Content-Length": str(len(body)),
             "Content-Type": "application/json",
         }
+        if custom_headers:
+            self.headers.update(custom_headers)
         self.server = MagicMock()
         self.client_address = ("127.0.0.1", 12345)
         self.close_connection = True
@@ -161,21 +168,32 @@ def test_server_test_meta_demo_handler():
 
 
 def test_server_set_key_handler():
-    dotenv_path = Path(".env")
-    old_dotenv_text = dotenv_path.read_text(encoding="utf-8") if dotenv_path.is_file() else None
-    old_key = os.environ.get("MODEL_API_KEY")
-    try:
-        payload = json.dumps({"api_key": "test_key_update"}).encode("utf-8")
-        handler = MockServerRequest("POST", "/api/set-key", body=payload)
-        status, _, body = handler.get_response()
-        assert status == 200
-        data = json.loads(body.decode("utf-8"))
-        assert data["status"] == "ok"
-        assert os.environ.get("MODEL_API_KEY") == "test_key_update"
-    finally:
-        if old_key is not None:
-            os.environ["MODEL_API_KEY"] = old_key
-        else:
-            os.environ.pop("MODEL_API_KEY", None)
-        if old_dotenv_text is not None:
-            dotenv_path.write_text(old_dotenv_text, encoding="utf-8")
+    # Client-supplied API keys must be rejected with 403 Forbidden
+    payload = json.dumps({"api_key": "test_client_key"}).encode("utf-8")
+    handler = MockServerRequest("POST", "/api/set-key", body=payload)
+    status, _, body = handler.get_response()
+    assert status == 403
+    data = json.loads(body.decode("utf-8"))
+    assert "error" in data
+    assert "Client-supplied API keys are disabled" in data["error"]
+
+    # Provider mode switching without client keys is permitted
+    mode_payload = json.dumps({"provider": "offline_replay"}).encode("utf-8")
+    handler_mode = MockServerRequest("POST", "/api/set-key", body=mode_payload)
+    status_mode, _, body_mode = handler_mode.get_response()
+    assert status_mode == 200
+    data_mode = json.loads(body_mode.decode("utf-8"))
+    assert data_mode["status"] == "ok"
+
+
+def test_server_payload_size_limit():
+    handler = MockServerRequest(
+        "POST",
+        "/api/check",
+        body=b"{}",
+        custom_headers={"Content-Length": str(15 * 1024 * 1024)},
+    )
+    status, _, body = handler.get_response()
+    assert status == 413
+    data = json.loads(body.decode("utf-8"))
+    assert "10 MB" in data["error"]

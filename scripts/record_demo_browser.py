@@ -86,6 +86,28 @@ class CDPController:
 
 
 async def run_walkthrough_and_record():
+    import sys
+
+    # Ensure local server is active on port 8000
+    server_proc = None
+    try:
+        urllib.request.urlopen("http://127.0.0.1:8000/api/health", timeout=1)
+        print("[Record] Local server is already running on port 8000.", flush=True)
+    except Exception:
+        print("[Record] Starting local ArdhiCheck server on port 8000...", flush=True)
+        server_proc = subprocess.Popen(
+            [sys.executable, "-m", "app.server", "8000"],
+            cwd=str(BASE_DIR),
+        )
+        for _ in range(20):
+            await asyncio.sleep(0.5)
+            try:
+                urllib.request.urlopen("http://127.0.0.1:8000/api/health", timeout=1)
+                print("[Record] Server is ready on http://127.0.0.1:8000.", flush=True)
+                break
+            except Exception:
+                pass
+
     chrome_bin = find_browser_executable()
     user_data_dir = BASE_DIR / ".chrome_demo_profile"
     user_data_dir.mkdir(parents=True, exist_ok=True)
@@ -153,23 +175,19 @@ async def run_walkthrough_and_record():
         await cdp.evaluate("openApiKeyModal()")
         await record_frame("02_meta_models_modal", hold_seconds=3.0)
 
-        # Change to Baseten Muse Spark Open
+        # Show Meta Muse Spark Open self-hosted host option
         await cdp.evaluate(
-            "document.getElementById('modalProviderSelect').value = 'baseten_spark_open';"
+            "document.getElementById('modalProviderSelect').value = 'spark_open';"
             "onProviderChange()"
         )
         await record_frame("03_open_weights_spark_open", hold_seconds=2.0)
 
+        # Switch back to official dev.meta.ai endpoint
         await cdp.evaluate(
             "document.getElementById('modalProviderSelect').value = 'meta_official';"
             "onProviderChange()"
         )
         await record_frame("04_meta_official_selected", hold_seconds=1.5)
-
-        await cdp.evaluate(
-            "document.getElementById('modalProviderSelect').value = 'baseten_spark_open';"
-            "onProviderChange()"
-        )
         await cdp.evaluate("closeApiKeyModal()")
         await asyncio.sleep(1.0)
 
@@ -273,152 +291,18 @@ async def run_walkthrough_and_record():
                 proc.kill()
             except Exception:
                 pass
+        if server_proc:
+            try:
+                server_proc.terminate()
+                server_proc.wait(timeout=3)
+            except Exception:
+                try:
+                    server_proc.kill()
+                except Exception:
+                    pass
 
-    # Save animated WebP recording
-    if captured_frames:
-        video_path = RECORDINGS_DIR / "ardhicheck_demo_walkthrough.webp"
-        total_frames = len(captured_frames)
-        print(f"\n[Record] Saving video ({total_frames} frames) to {video_path}...")
-        captured_frames[0].save(
-            video_path,
-            save_all=True,
-            append_images=captured_frames[1:],
-            duration=500,
-            loop=0,
-            quality=85,
-        )
-        mb_size = video_path.stat().st_size / (1024 * 1024)
-        print(f"[Record] Video saved successfully! Size: {mb_size:.2f} MB")
-
-    # Generate interactive HTML player
-    player_html = RECORDINGS_DIR / "index.html"
-    player_content = (
-        '<!DOCTYPE html>\n<html lang="en">\n<head>\n'
-        '  <meta charset="UTF-8">\n'
-        '  <title>ArdhiCheck – Automated Demo Walkthrough Video</title>\n'
-        '  <script src="https://cdn.tailwindcss.com"></script>\n'
-        '</head>\n'
-        '<body class="bg-slate-900 text-white min-h-screen p-6 flex flex-col '
-        'items-center justify-center font-sans">\n'
-        '  <div class="max-w-4xl w-full space-y-4">\n'
-        '    <div class="flex items-center justify-between border-b border-slate-800 pb-3">\n'
-        '      <div>\n'
-        '        <h1 class="text-xl font-bold text-white flex items-center">\n'
-        '          <span class="w-3 h-3 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>\n'
-        '          ArdhiCheck Demo Video Walkthrough\n'
-        '        </h1>\n'
-        '        <p class="text-xs text-slate-400">Meta Global AI Developer Hackathon 2026'
-        ' Submission Recording</p>\n'
-        '      </div>\n'
-        '      <a href="ardhicheck_demo_walkthrough.webp" download class="px-3 py-1.5 rounded-lg '
-        'bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow">\n'
-        '        Download .WebP Video\n'
-        '      </a>\n'
-        '    </div>\n'
-        '    <div class="rounded-xl overflow-hidden border border-slate-700 shadow-2xl bg-black '
-        'flex items-center justify-center">\n'
-        '      <img src="ardhicheck_demo_walkthrough.webp" alt="ArdhiCheck Walkthrough" '
-        'class="w-full h-auto object-contain">\n'
-        '    </div>\n'
-        '  </div>\n</body>\n</html>'
-    )
-    player_html.write_text(player_content, encoding="utf-8")
-
-    # Generate Video Narration Script
-    script_md = RECORDINGS_DIR / "DEMO_VIDEO_SCRIPT.md"
-    script_content = """# ArdhiCheck – Meta Hackathon Demo Video Script
-
-**Target Duration:** ~3 minutes (under 5 minutes)
-**Video File:** `recordings/ardhicheck_demo_walkthrough.webp`
-**Event:** Meta Global AI Developer Hackathon (Oct 26 – Nov 4, 2026)
-
----
-
-### [0:00 - 0:25] The Problem & Introduction
-> **Visual:** Homepage, Header with *Meta Hackathon 2026* badge, honest telemetry banner.
->
-> **Narration:**
-> "Welcome to **ArdhiCheck**, the AI-powered Kenyan cadastral land due-diligence engine
-> built for the Meta Global AI Developer Hackathon.
-> In Kenya, land fraud and clerical blunders in survey plans cost buyers and financial
-> institutions billions of shillings. Deeds often contain transposed bearings, unclosed
-> traverses, or overlap gazetted public forests and riparian river reserves.
-> ArdhiCheck solves this with a mathematically rigorous, dual-engine approach:
-> Meta Muse AI for multimodal document extraction and computer vision, combined
-> with pure geometric verification under Kenya's Survey Act Cap 299."
-
----
-
-### [0:25 - 0:50] Hackathon Models & Cerebral Valley Failover
-> **Visual:** Opens Meta Model API Configuration modal showing official `muse-spark-1.3`,
-> `muse-spark-open`, `muse-glimmer`, and `sam-3.1`.
->
-> **Narration:**
-> "ArdhiCheck runs on Meta's official **Muse Spark 1.3** via the Meta Model API at `dev.meta.ai`.
-> In accordance with Cerebral Valley's hackathon guidelines, we also support Meta open-weight
-> models—including **Muse Spark Open**, **Muse Glimmer**, and **SAM 3.1** on self-hosted compute.
-> Every result features honest, auditable telemetry with exact token usage, model IDs,
-> and latencies—and pure geometry never fabricates AI calls."
-
----
-
-### [0:50 - 1:30] Real Cadastral Pipeline (Scenario 1: Clean Deed Plan)
-> **Visual:** Clicks *Scenario 1: Nairobi Upper Hill*. Green verdict banner, relative
-> precision 1:inf, Bowditch canvas, shoelace area, and execution provenance cards.
->
-> **Narration:**
-> "Here is our single real pipeline in action.
-> We send a deed plan for L.R. 209/14682 in Upper Hill, Nairobi.
-> Meta Muse Spark 1.3 extracts the boundary schedule in seconds.
-> Our pure Python geometry engine runs Bowditch closure and Shoelace area calculation.
-> The traverse closes with zero linear error, the statutory area matches 0.50 hectares
-> exactly, and the parcel is certified **GREEN**."
-
----
-
-### [1:30 - 2:05] Algorithmic Blunder Localization (Scenario 2: Typo Detected)
-> **Visual:** Clicks *Scenario 2: Nakuru Municipality*. Amber verdict banner, 62.4m linear
-> misclosure. Candidate Typo Fixes table highlighting `Leg 2: 009° -> 090°`.
->
-> **Narration:**
-> "Now, look what happens with a common human error. In this Nakuru residential plot,
-> the deed plan printed `009°` instead of `090°`—a clerical transposition.
-> The traverse fails closure with over 62 meters of linear error.
-> But ArdhiCheck's algorithmic typo ranker tests adjacent-digit transpositions and
-> single-digit substitutions. Within milliseconds, it localizes the exact blunder to Leg 2,
-> ranking the true fix at #1 with a single click."
-
----
-
-### [2:05 - 2:35] Universal Document & GIS Upload
-> **Visual:** Upload card with drag & drop for images, PDFs, CSV coordinate tables,
-> and GeoJSON boundaries, plus the *Download Test Pack (.zip)* button.
->
-> **Narration:**
-> "Users and evaluators don't need to manually type coordinates. ArdhiCheck accepts photos,
-> scans, PDFs, CSV coordinate tables, and GeoJSON boundary polygons.
-> Evaluators can also download our complete Kenyan test survey pack directly from the dashboard."
-
----
-
-### [2:35 - 3:00] Inbuilt Interactive Kenya Map & Spatial Reserve Screening
-> **Visual:** Switches to *Cadastral Map & Spatial Reserve Screening*. Clicks points on
-> Nairobi map, draws polygon, adjusts riparian buffer slider to 45m.
-> Then clicks inside Karura Forest to show red conflict warning.
->
-> **Narration:**
-> "Finally, our spatial reserve screening engine screens land parcels against Kenya's
-> gazetted public forests, Nairobi National Park, and statutory river corridors.
-> Users can drop boundary beacons on the interactive map, adjust environmental riparian
-> buffer setbacks dynamically, and immediately know if a parcel infringes on public land.
->
-> **ArdhiCheck: Turning cadastral uncertainty into verified certainty with Meta AI.**"
-"""
-    script_md.write_text(script_content, encoding="utf-8")
-
-    print("\n[Record] Demo script and interactive player generated in recordings/")
-    print(f"[Record] Screenshots saved to {SCREENSHOTS_DIR}")
-    print("[Record] Finished walkthrough successfully!")
+    print(f"\n[Record] Walkthrough complete! All screenshots saved to {SCREENSHOTS_DIR}")
+    print(f"[Record] Captured {len(captured_frames)} frame screenshots.")
 
 
 if __name__ == "__main__":

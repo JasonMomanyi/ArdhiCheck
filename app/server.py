@@ -17,6 +17,7 @@ import json
 import mimetypes
 import os
 import sys
+import time
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -28,9 +29,15 @@ from app.pipeline import LEGAL_DISCLAIMER, run_survey_audit
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = BASE_DIR / "app" / "static"
+ASSETS_DIR = BASE_DIR / "assets"
 EXAMPLES_DIR = BASE_DIR / "data" / "examples"
 
 load_env_file()
+
+MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10 MB maximum upload payload
+RATE_LIMIT_WINDOW_SEC = 60
+MAX_REQUESTS_PER_WINDOW = 30
+_CLIENT_REQUEST_LOG: dict[str, list[float]] = {}
 
 
 class ArdhiCheckHandler(BaseHTTPRequestHandler):
@@ -82,6 +89,14 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
         if path.startswith("/static/"):
             rel_path = path.replace("/static/", "")
             self._send_file(STATIC_DIR / rel_path)
+            return
+
+        if path.startswith("/assets/"):
+            rel_path = path.replace("/assets/", "")
+            target_file = ASSETS_DIR / rel_path
+            if not target_file.is_file() and (STATIC_DIR / "assets" / rel_path).is_file():
+                target_file = STATIC_DIR / "assets" / rel_path
+            self._send_file(target_file)
             return
 
         if path.startswith("/data/examples/"):
@@ -179,8 +194,38 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
         parsed_url = urlparse(self.path)
         path = parsed_url.path
 
+        # 1. Payload size limit check
+        content_length = int(self.headers.get("Content-Length", 0))
+        if content_length > MAX_UPLOAD_SIZE:
+            self._send_json(
+                {"error": f"Upload payload exceeds 10 MB limit ({content_length} bytes)."},
+                status=HTTPStatus.REQUEST_ENTITY_TOO_LARGE,
+            )
+            return
+
+        # 2. Rate limiting check for compute & analysis endpoints
+        if path in ("/api/check", "/api/screen-reserves"):
+            client_ip = (
+                self.client_address[0]
+                if hasattr(self, "client_address") and self.client_address
+                else "127.0.0.1"
+            )
+            now = time.time()
+            timestamps = _CLIENT_REQUEST_LOG.setdefault(client_ip, [])
+            _CLIENT_REQUEST_LOG[client_ip] = [
+                t for t in timestamps if now - t < RATE_LIMIT_WINDOW_SEC
+            ]
+            if len(_CLIENT_REQUEST_LOG[client_ip]) >= MAX_REQUESTS_PER_WINDOW:
+                self._send_json(
+                    {
+                        "error": "Rate limit exceeded (30 requests/minute). Please wait before trying again."
+                    },
+                    status=HTTPStatus.TOO_MANY_REQUESTS,
+                )
+                return
+            _CLIENT_REQUEST_LOG[client_ip].append(now)
+
         if path == "/api/check":
-            content_length = int(self.headers.get("Content-Length", 0))
             body_bytes = self.rfile.read(content_length)
 
             try:
@@ -353,7 +398,6 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
             return
 
         if path == "/api/set-key":
-            content_length = int(self.headers.get("Content-Length", 0))
             body_bytes = self.rfile.read(content_length)
             try:
                 payload = json.loads(body_bytes.decode("utf-8"))
@@ -365,6 +409,20 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
 
             provider = payload.get("provider", "").strip()
             new_key = payload.get("api_key", "").strip()
+
+            # Security rule: No client-supplied keys in public deployments
+            if new_key and new_key not in ("KEEP_EXISTING", ""):
+                self._send_json(
+                    {
+                        "error": (
+                            "Client-supplied API keys are disabled for public safety. "
+                            "ArdhiCheck runs strictly on server-configured credentials or offline replay."
+                        )
+                    },
+                    status=HTTPStatus.FORBIDDEN,
+                )
+                return
+
             new_base_url = payload.get("base_url", "").strip()
             new_model = payload.get("model", "").strip()
 
@@ -374,14 +432,9 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
             elif provider == "self_hosted_open":
                 new_model = new_model or "muse-spark-open"
             elif provider == "offline_replay":
-                new_key = ""
                 new_base_url = "https://api.meta.ai/v1"
                 new_model = "muse-spark-1.3"
 
-            if new_key and new_key != "KEEP_EXISTING":
-                os.environ["MODEL_API_KEY"] = new_key
-            elif provider == "offline_replay":
-                os.environ["MODEL_API_KEY"] = ""
             if new_base_url:
                 os.environ["MODEL_BASE_URL"] = new_base_url
             if new_model:

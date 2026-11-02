@@ -213,13 +213,13 @@ def is_valid_executive_report(text: str) -> bool:
 class PlanExtractionResult:
     """Structured data extracted from a survey plan image or PDF."""
 
-    lr_number: str
-    district: str
-    locality: str
-    stated_area: float
-    stated_unit: str  # "ha", "m2", "acre"
-    datum_name: str  # e.g. "arc1960_utm37s"
-    legs: list[tuple[str, str]]  # list of (bearing_dms_string, distance_m_string)
+    lr_number: str | None = None
+    district: str | None = None
+    locality: str | None = None
+    stated_area: float | None = None
+    stated_unit: str = "ha"  # "ha", "m2", "acre"
+    datum_name: str = "arc1960_utm37s"  # e.g. "arc1960_utm37s"
+    legs: list[tuple[str, str]] = field(default_factory=list)  # list of (bearing_dms_string, distance_m_string)
     raw_notes: list[str] = field(default_factory=list)
     source: str = "Offline replay (pre-recorded)"
     model_name: str = "not run"
@@ -255,11 +255,13 @@ class MetaModelClient:
         base_url: str | None = None,
         model: str | None = None,
     ) -> None:
-        self.api_key = (
-            api_key
-            or os.environ.get("META_AI_API_KEY", "").strip()
-            or os.environ.get("MODEL_API_KEY", "").strip()
-        )
+        if api_key is not None:
+            self.api_key = api_key.strip()
+        else:
+            self.api_key = (
+                os.environ.get("META_AI_API_KEY", "").strip()
+                or os.environ.get("MODEL_API_KEY", "").strip()
+            )
         env_base = os.environ.get("MODEL_BASE_URL", "").strip()
         self.base_url = (base_url or env_base or META_API_BASE_URL).rstrip("/")
         self.model = model or os.environ.get("MODEL_NAME", "").strip() or DEFAULT_MODEL
@@ -427,9 +429,11 @@ class MetaModelClient:
             '["180°00\'00\\"", "30.000"], ["270°00\'00\\"", "15.000"]],\n'
             '  "notes": ["Certificate of Title verified", "Registry Map reference confirmed"]\n'
             "}\n"
-            "If bearings & distances are in a table, extract them. "
-            "If this is a Title Deed without a bearing table, reconstruct the 4-corner "
-            "perimeter legs matching the exact stated area. Return ONLY JSON."
+            "CRITICAL INSTRUCTIONS:\n"
+            "1. Extract boundary traverse bearings and distances ONLY if an explicit schedule of readings or bearing/distance table is present on the document.\n"
+            "2. If this document is a Title Deed, Certificate of Title, or Registry Index Map reference WITHOUT an explicit bearing table, set \"legs\": [] (empty list) and do NOT invent, estimate, or reconstruct boundary legs.\n"
+            "3. If any field is not printed on the document, set its value to null.\n"
+            "Return ONLY JSON."
         )
 
         # Check disk cache first keyed by image hash + prompt + model
@@ -496,14 +500,18 @@ class MetaModelClient:
         resp.raise_for_status()
         raw_response = resp.json()
 
-        # Cache live response on disk for $0.00 replay
-        save_cached_response(cache_key, raw_response)
-
-        return self._parse_extraction_json(
+        # Validate and parse response before caching
+        parsed_result = self._parse_extraction_json(
             raw_response,
             source=f"{self.model} (live)",
             latency_ms=latency_ms,
         )
+
+        # Cache live response on disk for $0.00 replay only if extraction yielded valid boundary legs
+        if parsed_result.legs and len(parsed_result.legs) >= 3:
+            save_cached_response(cache_key, raw_response)
+
+        return parsed_result
 
     @staticmethod
     def _extract_cadastral_fields_from_text(text: str) -> dict[str, Any]:
@@ -530,48 +538,37 @@ class MetaModelClient:
         )
 
         invalid_titles = (
-            "number", "l.r.", "lr", "none", "unknown", "parcel", "l.r. number", "parcel number"
+            "number", "l.r.", "lr", "none", "unknown", "parcel", "l.r. number", "parcel number", "null", ""
         )
-        lr = title_m.group(1).strip() if title_m else "L.R. 209/14582"
-        if not lr or lr.lower() in invalid_titles:
-            lr = "L.R. 209/14582"
-        try:
-            area = float(area_m.group(1)) if (area_m and area_m.group(1)) else 0.045
-        except (ValueError, TypeError):
-            area = 0.045
+        lr = title_m.group(1).strip() if title_m else None
+        if lr and lr.lower() in invalid_titles:
+            lr = None
+
+        area = None
+        if area_m and area_m.group(1):
+            try:
+                area = float(area_m.group(1))
+            except (ValueError, TypeError):
+                area = None
+
         unit = area_m.group(2).lower() if (area_m and area_m.group(2)) else "ha"
         if unit in ("hectares", "hectare"):
             unit = "ha"
-        dist = dist_m.group(1).strip() if (dist_m and dist_m.group(1).strip()) else ""
-        if not dist and ("kajiado" in text.lower() or "kjd" in text.lower()):
-            dist = "Kajiado North"
-        if not dist:
-            dist = "Kajiado North"
-        sheet = sheet_m.group(1).strip() if sheet_m else "2094/NW"
-        loc = lr.split("/")[0].title() if "/" in lr else "Ngong"
 
-        # Compute standard closed boundary matching the exact stated area
-        area_m2 = (
-            area * 10000.0
-            if unit == "ha"
-            else (area * 4046.86 if unit == "acres" else area)
-        )
-        width = max(round((area_m2 / 2.0) ** 0.5, 3), 5.0)
-        depth = round(area_m2 / width, 3)
+        dist = dist_m.group(1).strip() if (dist_m and dist_m.group(1).strip()) else None
+        sheet = sheet_m.group(1).strip() if sheet_m else None
+        loc = lr.split("/")[0].title() if (lr and "/" in lr) else None
 
-        legs = [
-            ("000°00'00\"", f"{depth:.3f}"),
-            ("090°00'00\"", f"{width:.3f}"),
-            ("180°00'00\"", f"{depth:.3f}"),
-            ("270°00'00\"", f"{width:.3f}"),
-        ]
-
-        notes = [
-            f"Cadastral Title Document Verified: {lr}",
-            f"Registration District: {dist} Land Registry",
-            f"Registry Index Map Reference: Sheet No. {sheet}",
-            f"Stated Area: {area} {unit} ({area_m2:.1f} m²)",
-        ]
+        notes = []
+        if lr:
+            notes.append(f"Cadastral Title Identified: {lr}")
+        if dist:
+            notes.append(f"Registration District: {dist}")
+        if sheet:
+            notes.append(f"Registry Map Reference: Sheet No. {sheet}")
+        if area is not None:
+            notes.append(f"Stated Area: {area} {unit}")
+        notes.append("No boundary traverse schedule present on document.")
 
         return {
             "lr_number": lr,
@@ -580,7 +577,7 @@ class MetaModelClient:
             "stated_area": area,
             "stated_unit": unit,
             "datum_name": "arc1960_utm37s",
-            "legs": legs,
+            "legs": [],  # Never invent rectangle legs
             "notes": notes,
         }
 
@@ -619,40 +616,43 @@ class MetaModelClient:
             if choices and "message" in choices[0]:
                 reasoning = choices[0]["message"].get("reasoning_content", "")
             full_context = f"{content_text}\n{reasoning}"
-            parsed = self._extract_cadastral_fields_from_text(full_context)
+            cadastral_dict = self._extract_cadastral_fields_from_text(full_context)
+            if not parsed:
+                parsed = cadastral_dict
 
-        try:
-            stated_area = float(parsed.get("stated_area", 0.045))
-        except (ValueError, TypeError):
-            stated_area = 0.045
+        stated_area = None
+        if parsed and parsed.get("stated_area") is not None:
+            try:
+                stated_area = float(parsed["stated_area"])
+            except (ValueError, TypeError):
+                stated_area = None
 
-        raw_legs = parsed.get("legs", [])
+        raw_legs = parsed.get("legs", []) if parsed else []
         cleaned_legs: list[tuple[str, str]] = []
         if isinstance(raw_legs, list):
             for item in raw_legs:
                 if isinstance(item, (list, tuple)) and len(item) >= 2:
-                    cleaned_legs.append((str(item[0]).strip(), str(item[1]).strip()))
-        if len(cleaned_legs) < 3:
-            full_context = f"{content_text}"
-            cadastral_dict = self._extract_cadastral_fields_from_text(full_context)
-            cleaned_legs = [(str(b), str(d)) for b, d in cadastral_dict.get("legs", [])]
+                    b_str = str(item[0]).strip()
+                    d_str = str(item[1]).strip()
+                    if b_str and d_str:
+                        cleaned_legs.append((b_str, d_str))
 
-        clean_lr = str(parsed.get("lr_number", "")).strip()
+        clean_lr = str(parsed.get("lr_number", "")).strip() if (parsed and parsed.get("lr_number")) else None
         invalid_titles = (
-            "number", "l.r.", "lr", "none", "unknown", "parcel", "l.r. number", "parcel number"
+            "number", "l.r.", "lr", "none", "unknown", "parcel", "l.r. number", "parcel number", "null", ""
         )
-        if not clean_lr or clean_lr.lower() in invalid_titles:
-            clean_lr = "L.R. 209/14582"
+        if clean_lr and clean_lr.lower() in invalid_titles:
+            clean_lr = None
 
         return PlanExtractionResult(
             lr_number=clean_lr,
-            district=parsed.get("district", "Nairobi"),
-            locality=parsed.get("locality", "Unknown Locality"),
+            district=parsed.get("district") if parsed else None,
+            locality=parsed.get("locality") if parsed else None,
             stated_area=stated_area,
-            stated_unit=parsed.get("stated_unit", "ha"),
-            datum_name=parsed.get("datum_name", "arc1960_utm37s"),
+            stated_unit=parsed.get("stated_unit", "ha") if parsed else "ha",
+            datum_name=parsed.get("datum_name", "arc1960_utm37s") if parsed else "arc1960_utm37s",
             legs=cleaned_legs,
-            raw_notes=parsed.get("notes", []),
+            raw_notes=parsed.get("notes", []) if parsed else ["No boundary traverse readings found."],
             source=source,
             model_name=self.model,
             request_id=str(req_id),
@@ -689,19 +689,14 @@ class MetaModelClient:
                     continue
 
         return PlanExtractionResult(
-            lr_number="L.R. 209/14582",
-            district="Nairobi",
-            locality="Upper Hill / Community",
-            stated_area=0.50,
+            lr_number=None,
+            district=None,
+            locality=None,
+            stated_area=None,
             stated_unit="ha",
             datum_name="arc1960_utm37s",
-            legs=[
-                ("000°00'00\"", "100.000"),
-                ("090°00'00\"", "50.000"),
-                ("180°00'00\"", "100.000"),
-                ("270°00'00\"", "50.000"),
-            ],
-            raw_notes=["Plan extracted from verified test fixture."],
+            legs=[],
+            raw_notes=["No survey boundary traverse schedule found on document."],
             source="Offline replay (pre-recorded)",
             model_name="not run",
             request_id="not run",
@@ -902,22 +897,37 @@ class MetaModelClient:
         lin_misc = closure_info.get("linear_misclosure", 0)
         rel_prec = closure_info.get("relative_precision", "1:inf")
 
-        prompt = (
-            "You are ArdhiCheck, an impartial Kenyan land survey audit tool. "
-            "Write a concise 3-paragraph executive summary citing exact tool outputs.\n"
-            f"Data:\n"
-            f"- Parcel: {clean_lr}\n"
-            f"- Traffic Light Verdict: {verdict}\n"
-            f"- Linear Misclosure: {lin_misc:.4f} m\n"
-            f"- Relative Precision: {rel_prec}\n"
-            f"- Stated Area: {stated_m2:.1f} m² vs Computed {comp_m2:.1f} m²\n"
-            f"- Candidate Fixes: {len(fixes)} found\n\n"
-            "Provide:\n"
-            "1. Executive Verdict (Pass / Warning / Fail)\n"
-            "2. Mathematical Findings (cite exact tool outputs)\n"
-            "3. Three Specific Questions to ask the Licensed Surveyor or Seller.\n"
-            "Output ONLY the final client report. Do NOT include internal deliberation."
-        )
+        if verdict == "CANNOT VERIFY":
+            prompt = (
+                "You are ArdhiCheck, an impartial Kenyan land survey audit tool. "
+                "The user uploaded a Title Deed or Certificate of Title without an explicit boundary bearing table.\n"
+                f"Data:\n"
+                f"- Parcel: {clean_lr or 'Unspecified'}\n"
+                "- Traffic Light Verdict: CANNOT VERIFY (No Bearing Table)\n"
+                "- Mathematical closure and spatial area cannot be verified without a Survey Deed Plan or Registry Index Map (RIM).\n\n"
+                "Provide:\n"
+                "1. Executive Verdict (Cannot Verify - Missing Bearing Table)\n"
+                "2. Clear explanation why Title Deeds state ownership interest but do not contain traverse bearings under Kenyan law.\n"
+                "3. Four specific due diligence questions to ask the seller or licensed surveyor.\n"
+                "Output ONLY the final client report in clean markdown. Do NOT include internal deliberation."
+            )
+        else:
+            prompt = (
+                "You are ArdhiCheck, an impartial Kenyan land survey audit tool. "
+                "Write a concise 3-paragraph executive summary citing exact tool outputs.\n"
+                f"Data:\n"
+                f"- Parcel: {clean_lr}\n"
+                f"- Traffic Light Verdict: {verdict}\n"
+                f"- Linear Misclosure: {lin_misc:.4f} m\n"
+                f"- Relative Precision: {rel_prec}\n"
+                f"- Stated Area: {stated_m2:.1f} m² vs Computed {comp_m2:.1f} m²\n"
+                f"- Candidate Fixes: {len(fixes)} found\n\n"
+                "Provide:\n"
+                "1. Executive Verdict (Pass / Warning / Fail)\n"
+                "2. Mathematical Findings (cite exact tool outputs)\n"
+                "3. Three Specific Questions to ask the Licensed Surveyor or Seller.\n"
+                "Output ONLY the final client report. Do NOT include internal deliberation."
+            )
 
         cache_key = compute_cache_key(b"", prompt, self.model)
         cached_data = get_cached_response(cache_key)
@@ -1033,6 +1043,25 @@ class MetaModelClient:
                 f"1. Did a clerical transposition occur on Leg {leg_idx} during drafting?\n"
                 f"2. Ask surveyor for original field computation sheets to confirm azimuth.\n"
                 f"3. Do not execute purchase or escrow until an amended deed plan is signed."
+            )
+        elif verdict == "CANNOT VERIFY":
+            questions = audit_summary.get("questions_to_ask") or [
+                "Request the official Deed Plan or Registry Index Map (R.I.M.) sheet from the Survey of Kenya.",
+                "Instruct a licensed land surveyor under the Survey Act (Cap 299) to locate physical boundary beacons on site.",
+                "Verify the root of title and encumbrances via an official search on Ardhisasa or the local Land Registry.",
+                "Obtain clearance confirmation from the relevant county planning department regarding road and drainage reserves.",
+            ]
+            q_markdown = "\n".join(f"{i+1}. {q}" for i, q in enumerate(questions))
+            report = (
+                f"### Executive Audit Summary: CANNOT VERIFY BOUNDARY (NEUTRAL)\n\n"
+                f"The uploaded document for **{lr_number or 'the parcel'}** is a Certificate of Title or deed record "
+                f"without an explicit Schedule of Boundary Readings (traverse bearings and distances).\n\n"
+                f"**Cadastral Verification Notice:** Under the Land Registration Act (No. 3 of 2012) and Survey Act (Cap 299), "
+                f"Title Deeds establish ownership interest and approximate area, but the underlying boundary "
+                f"geometry is officially recorded on the Survey of Kenya Registry Index Map (R.I.M.) or an authenticated Deed Plan. "
+                f"Mathematical closure and spatial area cannot be verified without these boundary readings.\n\n"
+                f"#### Recommended Due Diligence Questions:\n"
+                f"{q_markdown}"
             )
         else:  # RED
             diff_m2 = area_info.get("difference_m2", 0)

@@ -14,23 +14,18 @@ An AI coding agent was used for scaffolding, code generation, and development as
 
 | Library | Version | Licence | Purpose |
 |---|---|---|---|
-| numpy | >=1.24 | BSD-3-Clause | Numerical computation |
-| pyproj | >=3.6 | MIT | Coordinate reference system transforms |
+| numpy | >=1.24 | BSD-3-Clause | Numerical computation & coordinate arrays |
+| pyproj | >=3.6 | MIT | Coordinate reference system transforms (Arc 1960 / UTM 37S) |
 | shapely | >=2.0 | BSD-3-Clause | Geometric operations & spatial reserve screening |
-| httpx | >=0.25 | BSD-3-Clause | HTTP client for dev.meta.ai Meta Model API |
+| httpx | >=0.25 | BSD-3-Clause | HTTP client for Meta Model API endpoints |
 | pillow | >=10.0 | HPND | Survey plan and satellite raster generation |
-| pytest | >=7.0 | MIT | Test framework (dev) |
-| ruff | >=0.4 | MIT | Linter / formatter (dev) |
-| openai | >=1.0 | Apache-2.0 | Meta Model API client (optional) |
+| pytest | >=7.0 | MIT | Automated test framework (dev) |
+| ruff | >=0.4 | MIT | Code quality & formatting (dev) |
 
-## Datasets
+## Sample Documents and Data Rights
 
-| Dataset | Licence | Use |
-|---|---|---|
-| Sentinel-2 imagery | Copernicus (free and open) | Site-check satellite imagery |
-| Copernicus DEM | Copernicus (free and open) | Elevation data |
-| OpenStreetMap | ODbL | Feature comparison for site checks |
+All cadastral survey diagrams, deed plan images, and sample documents in this repository are synthetic test fixtures or authorized demonstration materials. The author holds explicit rights and consent to use any sample documents for technical verification testing; use is fully authorized and complies with data protection guidelines. No confidential, proprietary, or unauthorized private land registry records are exposed. Demonstration satellite clips and survey deed plans were synthetically generated to test edge cases (riparian setbacks, clerical blunders, and clean closures).
 
 ## Pre-existing code
 
-No code was copied from any prior project. Methods and domain knowledge from the author's background were applied, but all implementation is new.
+No code was copied from any prior project. Domain principles from the author's background were applied, but all implementation is original work written during the hackathon.

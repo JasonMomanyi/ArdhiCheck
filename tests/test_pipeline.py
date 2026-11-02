@@ -21,6 +21,7 @@ class TestPipelineScenarios:
         assert "GREEN" in result["advisory_report"] or "Pass" in result["advisory_report"]
         # Valuation must be completely removed
         assert "land_advisory" not in result
+        assert "valuation" not in result
         # Check provenance
         assert "provenance" in result
         prov = result["provenance"]
@@ -180,3 +181,63 @@ class TestPipelineScenarios:
     def test_scenario_6_athi_river(self):
         result = run_survey_audit(preset_hint="scenario_6")
         assert result["verdict"] == "GREEN"
+
+    def test_title_deed_without_legs_gives_cannot_verify(self):
+        """A title deed with no bearing table must return CANNOT VERIFY, never GREEN."""
+        mock_client = MagicMock()
+        mock_client.is_live = False
+        mock_client.model = "muse-spark-1.3"
+        mock_client.extract_plan_from_image.return_value = PlanExtractionResult(
+            lr_number="KAJIADO/NGONG/52149",
+            district="Kajiado North",
+            locality="Ngong",
+            stated_area=0.045,
+            stated_unit="ha",
+            datum_name="arc1960_utm37s",
+            legs=[],  # Title deed has no bearing schedule
+            raw_notes=["Title deed registers ownership interest; no traverse schedule."],
+            source="muse-spark-1.3",
+            model_name="muse-spark-1.3",
+            request_id="req_deed_123",
+            latency_ms=100,
+            tokens_used=50,
+        )
+        mock_client.synthesize_advisory_report.return_value = (
+            "Cannot verify traverse closure: document has no bearing table.",
+            {
+                "source": "muse-spark-1.3",
+                "model_name": "muse-spark-1.3",
+                "request_id": "rep_deed_456",
+                "latency_ms": 150,
+                "tokens_used": 60,
+            },
+        )
+
+        result = run_survey_audit(plan_image_bytes=b"fake_pdf_bytes", meta_client=mock_client)
+        assert result["verdict"] == "CANNOT VERIFY"
+        assert result["verdict"] != "GREEN"
+        assert result["closure"]["status"] == "not applicable"
+        assert result["closure"]["linear_misclosure"] is None
+        assert result["closure"]["relative_precision"] == "N/A"
+        assert result["area"]["status"] == "not applicable"
+        assert result["area"]["computed_m2"] is None
+        assert result["satellite"]["status"] == "not applicable"
+        assert len(result["questions_to_ask"]) >= 3
+        assert len(result["candidate_fixes"]) == 0
+        assert "valuation" not in result
+
+    def test_title_deed_without_legs_must_never_produce_green(self):
+        """Zero tolerance: empty legs must NEVER yield a GREEN pass."""
+        mock_client = MagicMock()
+        mock_client.is_live = False
+        mock_client.extract_plan_from_image.return_value = PlanExtractionResult(
+            lr_number="NAIROBI/BLOCK99/1",
+            stated_area=1.0,
+            stated_unit="ha",
+            legs=[],
+        )
+        mock_client.synthesize_advisory_report.return_value = ("Report", {})
+
+        result = run_survey_audit(plan_image_bytes=b"sample", meta_client=mock_client)
+        assert result["verdict"] != "GREEN"
+        assert result["verdict"] == "CANNOT VERIFY"

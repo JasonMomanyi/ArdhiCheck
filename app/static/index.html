@@ -82,7 +82,7 @@
         </span>
 
         <!-- Help & Due Diligence Guide Pill -->
-        <button onclick="openHelpModal()" class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/40 transition shadow-sm" title="Step-by-step instructions, Land Assessment, and Valuation Guide">
+        <button onclick="openHelpModal()" class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/40 transition shadow-sm" title="Step-by-step instructions, Cadastral Standards, and Due Diligence Guide">
           <i data-lucide="help-circle" class="w-3.5 h-3.5 mr-1.5 text-indigo-300"></i>
           <span>? Help & Guide</span>
         </button>
@@ -506,7 +506,7 @@
         </div>
 
         <!-- ArdhiCheck Statutory Cadastral Benchmarks & Legal Due Diligence Card -->
-        <div id="aiValuationCard" class="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 rounded-2xl p-6 sm:p-8 text-white border border-slate-700/80 shadow-xl space-y-6 relative overflow-hidden">
+        <div id="cadastralBenchmarksCard" class="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 rounded-2xl p-6 sm:p-8 text-white border border-slate-700/80 shadow-xl space-y-6 relative overflow-hidden">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-700/60 pb-4">
             <div class="flex items-center space-x-3">
               <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 flex items-center justify-center font-bold shadow-inner">
@@ -521,7 +521,7 @@
               </div>
             </div>
             <div class="flex items-center space-x-2">
-              <span id="aiValuationStatusBadge" class="text-xs px-3 py-1 rounded-full font-mono bg-indigo-500/20 text-indigo-200 border border-indigo-400/30 font-semibold">Statutory Benchmark</span>
+              <span id="cadastralBenchmarksStatusBadge" class="text-xs px-3 py-1 rounded-full font-mono bg-indigo-500/20 text-indigo-200 border border-indigo-400/30 font-semibold">Statutory Benchmark</span>
             </div>
           </div>
 
@@ -1052,7 +1052,7 @@
     </div>
   </div>
 
-  <!-- Modal 3: Step-by-Step Instructions, Valuation & FAQ Guide -->
+  <!-- Modal 3: Step-by-Step Instructions, Cadastral Standards & FAQ Guide -->
   <div id="helpGuideModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-5 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-slate-100 pb-4">
@@ -1061,8 +1061,8 @@
             <i data-lucide="help-circle" class="w-5 h-5"></i>
           </div>
           <div>
-            <h3 class="font-extrabold text-slate-900 text-lg">ArdhiCheck Due Diligence & Valuation Guide</h3>
-            <p class="text-xs text-slate-500">Step-by-step instructions, Kenyan land pricing benchmarks, and statutory compliance</p>
+            <h3 class="font-extrabold text-slate-900 text-lg">ArdhiCheck Due Diligence & Cadastral Guide</h3>
+            <p class="text-xs text-slate-500">Step-by-step instructions, statutory setback standards, and legal due diligence rules</p>
           </div>
         </div>
         <button onclick="closeHelpModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100">
@@ -1075,7 +1075,7 @@
         <button onclick="switchGuideTab('steps')" id="guideTabSteps" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white transition">
           1. Step-by-Step Instructions
         </button>
-        <button onclick="switchGuideTab('valuation')" id="guideTabValuation" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+        <button onclick="switchGuideTab('clearance')" id="guideTabClearance" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
           2. Riparian & Reserve Clearance Guide
         </button>
         <button onclick="switchGuideTab('rules')" id="guideTabRules" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
@@ -1140,7 +1140,7 @@
       </div>
 
       <!-- Tab Content 2: Riparian & Reserve Clearance Guide -->
-      <div id="guideContentValuation" class="hidden space-y-4 text-xs text-slate-700">
+      <div id="guideContentClearance" class="hidden space-y-4 text-xs text-slate-700">
         <div class="p-3.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-950 space-y-1">
           <div class="font-bold text-sm flex items-center space-x-1.5">
             <i data-lucide="shield-check" class="w-4 h-4 text-indigo-600"></i>
@@ -1207,7 +1207,7 @@
             <i data-lucide="alert-circle" class="w-3.5 h-3.5 text-amber-600"></i>
             <span>Important Statutory Caveat</span>
           </div>
-          <p>Market valuations fluctuate based on road access, electricity, water connection, and topography. Always confirm exact statutory stamp duty with the Chief Government Valuer at the Ministry of Lands before finalizing budgets.</p>
+          <p>Encroachment within gazetted setbacks or riparian buffers can lead to mandatory demolition under NEMA and KeNHA enforcement. Always confirm physical boundary clearances on the ground with a licensed surveyor before executing any transaction.</p>
         </div>
       </div>
 
@@ -1704,7 +1704,7 @@
         { t: "Extracting Deed Plan...", d: "Reading parcel metadata & bearing table with Meta Muse AI..." },
         { t: "Executing Pure Geometry...", d: "Computing Bowditch misclosure & Shoelace area (Survey Act Cap 299)..." },
         { t: "Screening Spatial Reserves...", d: "Checking 30m riparian, road setbacks & satellite alignment (SAM 3.1)..." },
-        { t: "Synthesizing Advisory...", d: "Compiling land valuation benchmarks & due diligence report..." },
+        { t: "Synthesizing Advisory...", d: "Compiling statutory cadastral findings & due diligence report..." },
       ];
 
       let idx = 0;
@@ -1857,6 +1857,11 @@
         badge.innerText = 'CAUTION • SUSPECT CLERICAL BLUNDER';
         badge.className = 'text-xs font-black uppercase px-3 py-1 rounded-full tracking-wider bg-amber-500/30 text-amber-200 border border-amber-400';
         title.innerText = 'Traverse Misclosed: Typo Diagnosed';
+      } else if (data.verdict === 'CANNOT VERIFY') {
+        banner.className = 'rounded-2xl p-6 sm:p-8 text-white shadow-lg border flex flex-col md:flex-row md:items-center justify-between gap-6 bg-gradient-to-r from-slate-700 to-slate-900 border-slate-600';
+        badge.innerText = 'CANNOT VERIFY • NO BEARING TABLE';
+        badge.className = 'text-xs font-black uppercase px-3 py-1 rounded-full tracking-wider bg-slate-500/30 text-slate-200 border border-slate-400';
+        title.innerText = 'No Traverse Bearings on Document';
       } else {
         banner.className = 'rounded-2xl p-6 sm:p-8 text-white shadow-lg border flex flex-col md:flex-row md:items-center justify-between gap-6 bg-gradient-to-r from-rose-900 to-red-950 border-rose-600';
         badge.innerText = 'AUDIT FAILED • INCONSISTENCY';
@@ -1864,10 +1869,10 @@
         title.innerText = 'Document Inconsistency or Environmental Overlap';
       }
 
-      document.getElementById('verdictLrNumber').innerText = data.lr_number;
+      document.getElementById('verdictLrNumber').innerText = data.lr_number || 'No Parcel Stated';
       desc.innerText = data.verdict_reason;
-      document.getElementById('precisionValue').innerText = data.closure.relative_precision;
-      document.getElementById('precisionStatus').innerText = data.closure.linear_misclosure < 0.1 ? 'Surpasses 1:5,000 threshold' : 'Below statutory standard';
+      document.getElementById('precisionValue').innerText = data.closure.relative_precision || 'N/A';
+      document.getElementById('precisionStatus').innerText = data.closure.linear_misclosure != null ? (data.closure.linear_misclosure < 0.1 ? 'Surpasses 1:5,000 threshold' : 'Below statutory standard') : 'Not applicable (No bearing schedule)';
 
       // Telemetry & Provenance (Task 3)
       if (data.provenance) {
@@ -1910,11 +1915,11 @@
       }
 
       // Mathematical Evidence Cards
-      document.getElementById('metricMisclosure').innerText = `${data.closure.linear_misclosure.toFixed(3)} m`;
-      document.getElementById('metricPerimeter').innerText = `Perimeter: ${data.closure.perimeter.toFixed(1)} m`;
+      document.getElementById('metricMisclosure').innerText = data.closure.linear_misclosure != null ? `${data.closure.linear_misclosure.toFixed(3)} m` : 'N/A';
+      document.getElementById('metricPerimeter').innerText = data.closure.perimeter != null ? `Perimeter: ${data.closure.perimeter.toFixed(1)} m` : 'Perimeter: N/A';
 
-      document.getElementById('metricArea').innerText = `${(data.area.computed_m2 / 10000).toFixed(3)} Ha`;
-      document.getElementById('metricAreaDiff').innerText = `${data.area.difference_pct.toFixed(2)}% stated vs computed (${data.area.difference_m2.toFixed(1)} m²)`;
+      document.getElementById('metricArea').innerText = data.area.computed_m2 != null ? `${(data.area.computed_m2 / 10000).toFixed(3)} Ha` : 'N/A';
+      document.getElementById('metricAreaDiff').innerText = data.area.difference_pct != null ? `${data.area.difference_pct.toFixed(2)}% stated vs computed (${data.area.difference_m2.toFixed(1)} m²)` : (data.area.stated_value ? `Stated: ${data.area.stated_value} ${data.area.stated_unit}` : 'Not applicable');
 
       document.getElementById('metricDatum').innerText = data.datum.crs_name;
       if (data.wgs84_coords && data.wgs84_coords.length > 0) {
@@ -2094,7 +2099,15 @@
         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
       }
 
-      if (!adjustedCoords || adjustedCoords.length === 0) return;
+      if (!adjustedCoords || adjustedCoords.length === 0) {
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '13px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('No boundary traverse bearings found on document.', w / 2, h / 2 - 10);
+        ctx.fillText('Traverse geometry cannot be drafted without survey legs.', w / 2, h / 2 + 15);
+        ctx.textAlign = 'start';
+        return;
+      }
 
       const xs = adjustedCoords.map(c => c[0]);
       const ys = adjustedCoords.map(c => c[1]);
@@ -2207,7 +2220,7 @@
       document.getElementById('helpGuideModal').classList.add('hidden');
     }
     function switchGuideTab(tab) {
-      ['steps', 'valuation', 'rules', 'faq'].forEach(t => {
+      ['steps', 'clearance', 'rules', 'faq'].forEach(t => {
         const content = document.getElementById(`guideContent${t.charAt(0).toUpperCase() + t.slice(1)}`);
         const tabBtn = document.getElementById(`guideTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
         if (content) content.classList.add('hidden');

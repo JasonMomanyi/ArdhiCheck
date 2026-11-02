@@ -28,7 +28,6 @@ from app.geo.bearings import format_bearing, parse_bearing
 from app.geo.datum import transform_to_wgs84
 from app.geo.fixes import suggest_single_value_fixes
 from app.geo.traverse import Leg, bowditch_adjust, closure, compute_traverse
-from app.geo.valuation import estimate_land_valuation
 from app.meta.client import MetaModelClient
 
 LEGAL_DISCLAIMER = (
@@ -249,6 +248,104 @@ def run_survey_audit(
     else:
         raise ValueError("Must provide either plan image, preset hint, or manual legs.")
 
+    # Guard: If no bearing/distance table is present on document, we cannot verify traverse
+    if not legs_as_text or len(legs_as_text) < 3:
+        questions_to_ask = [
+            "Request the official Deed Plan or Registry Index Map (R.I.M.) sheet from the Survey of Kenya.",
+            "Instruct a licensed land surveyor under the Survey Act (Cap 299) to locate physical boundary beacons on site.",
+            "Verify the root of title and encumbrances via an official search on Ardhisasa or the local Land Registry.",
+            "Obtain clearance confirmation from the relevant county planning department regarding road and drainage reserves.",
+        ]
+        verdict = "CANNOT VERIFY"
+        verdict_reason = (
+            "Document contains no schedule of boundary bearings or distances. "
+            "Mathematical closure and spatial area cannot be verified from a Title Deed alone; "
+            "an authenticated Survey Deed Plan or Registry Index Map (R.I.M.) is required."
+        )
+        stated_m2 = None
+        if stated_area is not None:
+            if stated_unit == "ha":
+                stated_m2 = stated_area * 10000.0
+            elif stated_unit == "acres":
+                stated_m2 = stated_area * 4046.86
+            else:
+                stated_m2 = stated_area
+
+        audit_summary = {
+            "verdict": verdict,
+            "verdict_reason": verdict_reason,
+            "lr_number": lr_number,
+            "district": district,
+            "locality": locality,
+            "closure": {
+                "misclosure_e": None,
+                "misclosure_n": None,
+                "linear_misclosure": None,
+                "perimeter": None,
+                "relative_precision": "N/A",
+                "tolerance_m": tolerance_misclosure_m,
+                "status": "not applicable",
+            },
+            "area": {
+                "stated_value": stated_area,
+                "stated_unit": stated_unit,
+                "stated_m2": stated_m2,
+                "computed_m2": None,
+                "difference_m2": None,
+                "difference_pct": None,
+                "within_tolerance": None,
+                "status": "not applicable",
+            },
+            "satellite": {
+                "has_riparian_zone": False,
+                "riparian_buffer_m": 0.0,
+                "overlap_area_m2": 0.0,
+                "detected_features": [],
+                "source": "not run",
+                "status": "not applicable",
+            },
+            "candidate_fixes": [],
+            "questions_to_ask": questions_to_ask,
+            "datum": {
+                "crs_name": crs_name or "arc1960_utm37s",
+                "uncertainty_note": "No boundary coordinates provided to transform.",
+            },
+        }
+
+        advisory_report, report_prov = client.synthesize_advisory_report(audit_summary)
+
+        return {
+            **audit_summary,
+            "advisory_report": advisory_report,
+            "disclaimer": LEGAL_DISCLAIMER,
+            "provenance": {
+                "extraction": extraction_prov,
+                "geometry": {
+                    "source": "app.geo (pure Python, 0 tokens)",
+                    "model_name": "none",
+                    "request_id": "pure_python_local",
+                    "latency_ms": 0,
+                    "tokens_used": 0,
+                },
+                "satellite": {
+                    "source": "not run",
+                    "model_name": "not run",
+                    "request_id": "not run",
+                    "latency_ms": "not run",
+                    "tokens_used": "not run",
+                    "status": "not applicable",
+                },
+                "report": report_prov,
+            },
+            "extraction_source": extraction_source,
+            "notes": notes,
+            "raw_coords": [],
+            "adjusted_coords": [],
+            "wgs84_coords": [],
+            "geojson": None,
+            "legs": [],
+        }
+
     # Step 2: Pure Geometry Verification (app.geo.*)
     geo_start_time = time.time()
     parsed_legs: list[Leg] = []
@@ -425,16 +522,7 @@ def run_survey_audit(
 
     advisory_report, report_prov = client.synthesize_advisory_report(audit_summary)
 
-    # Step 11: Indicative Valuation & Budget Advisory
-    val_estimate = estimate_land_valuation(
-        locality=locality,
-        district=district,
-        computed_m2=computed_m2,
-        stated_m2=area_comp.get("stated_m2", 0.0),
-        lr_number=lr_number,
-    )
-
-    # Step 12: GeoJSON packaging for mapping
+    # Step 11: GeoJSON packaging for mapping
     geojson_polygon = {
         "type": "Feature",
         "properties": {
@@ -452,7 +540,6 @@ def run_survey_audit(
     return {
         **audit_summary,
         "advisory_report": advisory_report,
-        "valuation": val_estimate.to_dict(),
         "disclaimer": LEGAL_DISCLAIMER,
         "provenance": {
             "extraction": extraction_prov,

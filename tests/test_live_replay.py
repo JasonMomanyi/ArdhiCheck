@@ -41,6 +41,7 @@ def test_replay_saved_spark_fixture() -> None:
 
     assert result["verdict"] == "GREEN"
     assert "209" in result["lr_number"]
+    assert "valuation" not in result
     assert result["closure"]["relative_precision"] == "1:inf"
     assert result["area"]["computed_m2"] == 5000.0
     assert result["area"]["within_tolerance"] is True
