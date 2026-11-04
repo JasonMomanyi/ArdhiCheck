@@ -33,7 +33,7 @@ ArdhiCheck bridges this gap: upload a survey plan or enter readings, get an auto
 ## Demo
 
 - **Live Web Application:** [https://ardhicheck-ivory.vercel.app](https://ardhicheck-ivory.vercel.app)
-- **Demo Video:** [Walkthrough Video (YouTube ](https://youtwJb5kE5dCgEolder) 
+- **Demo Video:** [Walkthrough Video (YouTube ](https://youtu.be/7YRuMupKd90) 
 
 ## Meta Technologies Used
 
