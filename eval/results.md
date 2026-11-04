@@ -1,68 +1,69 @@
-# ArdhiCheck Evaluation Results
+# ArdhiCheck Cadastral Verification Benchmark
 
-Comparative benchmark of **Raw LLM Reasoning** vs. **ArdhiCheck Hybrid Architecture** (Meta Muse Spark for reading + pure deterministic geometry in Python).
+Deterministic evaluation of the **pure Python statutory geometry engine** (`app.geo.*`) across **20 synthetic Kenyan cadastral benchmark plans** with verified ground truths.
 
-Evaluated across **20 synthetic Kenyan cadastral survey plans** containing clean surveys, clerical transpositions, gross misclosures, and area inflation discrepancies.
-
----
-
-## 1. Summary Benchmark Matrix
-
-| Evaluation Dimension | LLM-Only Reasoning | ArdhiCheck Hybrid Pipeline | Advantage |
-|---|---|---|---|
-| **Traffic-Light Verdict Accuracy** | 70.0% | **100.0%** | Deterministic thresholds under Survey Act Cap 299 |
-| **Traverse Closure Accuracy (Bowditch)** | 50.0% | **100.0%** | Floating-point geometry vs token probability |
-| **Shoelace Polygon Area Accuracy** | 50.0% | **60.0%** | Exact coordinate shoelace formula |
-| **Blunder Localisation (Typo Ranking)** | 0.0% | **60.0%** | Combinatorial single-value substitution search |
-| **Tokens Consumed for Geometry** | ~850 tokens / plan | **0 tokens** | Pure Python math runs free ($0.00) |
-| **Execution Latency (Geometry)** | ~1,400 ms | **< 3 ms** | Instant local execution |
+> [!NOTE]
+> This benchmark measures mathematical and algorithmic verification on known ground-truth traverse schedules. It validates floating-point Bowditch traverse closure, shoelace polygon area calculation, and combinatorial clerical typo diagnosis without external LLM token expenditure.
 
 ---
 
-## 2. Key Findings
+## 1. Measured Performance Metrics
 
-1. **Why Pure Code is Essential for Land Verification**:
-   - LLMs struggle with trigonometric precision (sines and cosines of degrees-minutes-seconds azimuths). When asked to verify closure, raw LLMs frequently hallucinate that boundaries close or fail to catch subtle errors.
-   - ArdhiCheck uses **Meta Muse Spark** exclusively for what multimodal models do best: reading imperfect scanned documents and extracting tabular numbers. The actual verification is handed to pure Python mathematical routines with zero hallucination risk.
-
-2. **Area Inflation Detection**:
-   - In land fraud, title documents frequently inflate acreage (e.g. stating 0.85 ha when the traverse coordinates only enclose 0.50 ha).
-   - Raw LLMs often take the printed title acreage at face value. ArdhiCheck recomputes the closed polygon area from the Bowditch coordinates and detects discrepancies beyond the statutory 3% tolerance.
-
-3. **Blunder Localisation**:
-   - When a survey plan fails authentication due to a typographical slip (such as typing `009°` instead of `090°`), an LLM cannot reliably simulate all 4-digit permutations.
-   - ArdhiCheck tests all single-digit substitutions and transpositions, successfully identifying the root cause in **100%** of single-error benchmark plans.
+| Evaluation Dimension | Measured Result | Specification / Methodology |
+|---|---|---|
+| **Traffic-Light Verdict Accuracy** | **95.0%** (19/20) | Illustrative statutory thresholds (GREEN, AMBER, RED) |
+| **Traverse Closure Accuracy (Bowditch)** | **100.0%** (20/20) | Strict agreement with known mathematical closure (< 0.05 m tolerance) |
+| **Area Discrepancy Detection** | **100.0%** (5/5 deficit cases detected) | Exact shoelace polygon area vs stated title acreage (> 3% threshold) |
+| **Blunder Localisation (Rank-1 Typo)** | **60.0%** (3/5) | Combinatorial single-digit substitution and transposition ranker |
+| **Tokens Consumed for Geometry** | **0 tokens** | Computed in pure Python floating-point math at zero inference cost |
+| **Average Geometry Latency** | **2.82 ms** | Local arithmetic execution per survey plan |
 
 ---
 
-## 3. Case-by-Case Breakdown (20 Plans)
+## 2. Key Architecture Principles
 
-| Case ID | Category | Parcel Identifier | Expected | LLM Verdict | ArdhiCheck Verdict | Computed Misclosure | Computed Area |
+1. **Deterministic Separation of Concerns**:
+   - Probabilistic language models are well suited for perceptual parsing (extracting printed coordinates from scanned images), but ill-suited for strict trigonometry.
+   - ArdhiCheck routes all bearing arithmetic, Bowditch coordinate adjustments, and polygon closures directly to pure Python functions (`app.geo.traverse`), ensuring zero hallucination risk in legal due diligence calculations.
+
+2. **Area Inflation Screening**:
+   - In fraudulent title transactions, documents may state inflated acreage (e.g., stating 0.85 ha when boundary coordinates enclose only 0.50 ha).
+   - The geometry engine independently computes parcel area from traverse coordinates and flags discrepancies exceeding illustrative statutory thresholds.
+
+3. **Clerical Blunder Diagnosis**:
+   - When a survey plan miscloses due to a single-digit clerical error (e.g., typing `009°` instead of `090°`), ArdhiCheck simulates single-digit substitutions and adjacent-digit transpositions across printed bearings and distances, successfully isolating the faulty leg and value in **60%** of single-blunder cases at Rank 1.
+
+---
+
+## 3. Case-by-Case Benchmark Results (20 Plans)
+
+| Case ID | Category | Parcel Identifier | Expected Verdict | Measured Verdict | Computed Misclosure | Computed Area | Latency |
 |---|---|---|---|---|---|---|---|
-| `EVAL-C1` | Clean Cadastral Traverse | `L.R. 209/5001` | **GREEN** | GREEN | **GREEN** | 0.000 m | 5000.0 m² |
-| `EVAL-C2` | Clean Cadastral Traverse | `L.R. 11942/10` | **GREEN** | GREEN | **GREEN** | 0.000 m | 6400.0 m² |
-| `EVAL-C3` | Clean Cadastral Traverse | `L.R. 8421/101` | **GREEN** | GREEN | **GREEN** | 0.000 m | 6235.4 m² |
-| `EVAL-C4` | Clean Cadastral Traverse | `L.R. 3777/202` | **GREEN** | GREEN | **GREEN** | 0.000 m | 3600.0 m² |
-| `EVAL-C5` | Clean Cadastral Traverse | `L.R. 15430/4` | **GREEN** | GREEN | **GREEN** | 0.000 m | 6000.0 m² |
-| `EVAL-B1` | Clerical Typo / Blunder | `L.R. 8421/39` | **AMBER** | GREEN | **AMBER** | 64.945 m | 2891.1 m² |
-| `EVAL-B2` | Clerical Typo / Blunder | `L.R. 209/7712` | **AMBER** | AMBER | **AMBER** | 41.800 m | 2326.4 m² |
-| `EVAL-B3` | Clerical Typo / Blunder | `L.R. 9102/44` | **AMBER** | AMBER | **AMBER** | 117.557 m | 6545.1 m² |
-| `EVAL-B4` | Clerical Typo / Blunder | `L.R. 6512/12` | **AMBER** | AMBER | **AMBER** | 10.984 m | 4869.8 m² |
-| `EVAL-B5` | Clerical Typo / Blunder | `L.R. 1420/8` | **AMBER** | AMBER | **AMBER** | 30.000 m | 1617.6 m² |
-| `EVAL-G1` | Gross Traverse Misclosure | `L.R. 4001/1` | **RED** | RED | **RED** | 64.031 m | 3866.7 m² |
-| `EVAL-G2` | Gross Traverse Misclosure | `L.R. 4001/2` | **RED** | RED | **RED** | 53.852 m | 3548.0 m² |
-| `EVAL-G3` | Gross Traverse Misclosure | `L.R. 4001/3` | **RED** | RED | **RED** | 36.389 m | 5783.3 m² |
-| `EVAL-G4` | Gross Traverse Misclosure | `L.R. 4001/4` | **RED** | RED | **RED** | 26.698 m | 4368.3 m² |
-| `EVAL-G5` | Gross Traverse Misclosure | `L.R. 4001/5` | **RED** | RED | **RED** | 62.346 m | 5176.4 m² |
-| `EVAL-A1` | Stated Area Deficit | `L.R. 7001/1` | **RED** | GREEN | **RED** | 0.000 m | 5000.0 m² |
-| `EVAL-A2` | Stated Area Deficit | `L.R. 7001/2` | **RED** | GREEN | **RED** | 0.000 m | 3200.0 m² |
-| `EVAL-A3` | Stated Area Deficit | `L.R. 7001/3` | **RED** | GREEN | **RED** | 0.000 m | 3600.0 m² |
-| `EVAL-A4` | Stated Area Deficit | `L.R. 7001/4` | **RED** | GREEN | **RED** | 0.000 m | 6000.0 m² |
-| `EVAL-A5` | Stated Area Deficit | `L.R. 7001/5` | **RED** | GREEN | **RED** | 0.000 m | 4900.0 m² |
+| `EVAL-C1` | Clean Cadastral Traverse | `L.R. 209/5001` | **GREEN** | **GREEN** | 0.000 m | 5000.0 m² | 0.09 ms |
+| `EVAL-C2` | Clean Cadastral Traverse | `L.R. 11942/10` | **GREEN** | **GREEN** | 0.000 m | 6400.0 m² | 0.07 ms |
+| `EVAL-C3` | Clean Cadastral Traverse | `L.R. 8421/101` | **GREEN** | **GREEN** | 0.000 m | 6235.4 m² | 0.06 ms |
+| `EVAL-C4` | Clean Cadastral Traverse | `L.R. 3777/202` | **GREEN** | **GREEN** | 0.000 m | 3600.0 m² | 0.07 ms |
+| `EVAL-C5` | Clean Cadastral Traverse | `L.R. 15430/4` | **GREEN** | **GREEN** | 0.000 m | 6000.0 m² | 0.09 ms |
+| `EVAL-B1` | Clerical Typo / Blunder | `L.R. 8421/39` | **AMBER** | **AMBER** | 64.945 m | 2891.1 m² | 6.09 ms |
+| `EVAL-B2` | Clerical Typo / Blunder | `L.R. 209/7712` | **AMBER** | **AMBER** | 72.000 m | 2683.9 m² | 6.13 ms |
+| `EVAL-B3` | Clerical Typo / Blunder | `L.R. 9102/44` | **AMBER** | **AMBER** | 120.000 m | 4156.9 m² | 4.70 ms |
+| `EVAL-B4` | Clerical Typo / Blunder | `L.R. 6512/12` | **AMBER** | **AMBER** | 10.000 m | 3888.0 m² | 5.41 ms |
+| `EVAL-B5` | Clerical Typo / Blunder | `L.R. 1420/8` | **AMBER** | **AMBER** | 78.785 m | 180.9 m² | 6.09 ms |
+| `EVAL-G1` | Gross Traverse Misclosure | `L.R. 4001/1` | **RED** | **RED** | 64.031 m | 5483.9 m² | 5.73 ms |
+| `EVAL-G2` | Gross Traverse Misclosure | `L.R. 4001/2` | **RED** | **RED** | 53.852 m | 4524.1 m² | 5.61 ms |
+| `EVAL-G3` | Gross Traverse Misclosure | `L.R. 4001/3` | **RED** | **RED** | 26.458 m | 4525.7 m² | 4.28 ms |
+| `EVAL-G4` | Gross Traverse Misclosure | `L.R. 4001/4` | **RED** | **AMBER** | 25.000 m | 3939.2 m² | 6.24 ms |
+| `EVAL-G5` | Gross Traverse Misclosure | `L.R. 4001/5` | **RED** | **RED** | 61.033 m | 6913.0 m² | 5.44 ms |
+| `EVAL-A1` | Stated Area Deficit | `L.R. 7001/1` | **RED** | **RED** | 0.000 m | 5000.0 m² | 0.06 ms |
+| `EVAL-A2` | Stated Area Deficit | `L.R. 7001/2` | **RED** | **RED** | 0.000 m | 3200.0 m² | 0.06 ms |
+| `EVAL-A3` | Stated Area Deficit | `L.R. 7001/3` | **RED** | **RED** | 0.000 m | 3600.0 m² | 0.06 ms |
+| `EVAL-A4` | Stated Area Deficit | `L.R. 7001/4` | **RED** | **RED** | 0.000 m | 6000.0 m² | 0.10 ms |
+| `EVAL-A5` | Stated Area Deficit | `L.R. 7001/5` | **RED** | **RED** | 0.000 m | 4900.0 m² | 0.10 ms |
 
 ---
 
-## 4. Spend & Safety Governance
+## 4. Reproducibility & Governance
 
-- **Token Spend Cap**: Zero tokens consumed for geometric computation; token usage strictly bounded during document parsing.
-- **Reproducibility**: Run `python -m eval.run_eval` to re-execute this benchmark locally at any time.
+- **Execution Command**: `python -m eval.run_eval`
+- **Audit Logging**: Every benchmark run records exact linear misclosures, shoelace areas, and candidate typo fixes.
+- **Illustrative Standards Disclaimer**: Statutory tolerances (1:5,000 relative precision, 0.30m linear tolerance, 3% area difference, and 30m riparian setback) represent illustrative engineering defaults to be verified by a licensed land surveyor.

@@ -418,7 +418,7 @@ class MetaModelClient:
             "For privacy, do not extract individual person names or national IDs. "
             "Extract ONLY the cadastral property information in valid JSON matching this schema:\n"
             "{\n"
-            '  "lr_number": "Title or parcel number (e.g. NGONG/NGONG/52149 or L.R. 209/...)",\n'
+            '  "lr_number": "Title or parcel number (e.g. NGONG/NGONG/98401 or L.R. 209/...)",\n'
             '  "district": "Registration District or County (e.g. Kajiado North)",\n'
             '  "locality": "Registration Section or Locality (e.g. Ngong)",\n'
             '  "stated_area": 0.045,\n'
@@ -881,7 +881,7 @@ class MetaModelClient:
         raw_lr = audit_summary.get("lr_number", "L.R.")
         clean_lr = str(raw_lr).strip()
         if not clean_lr or clean_lr.lower() in ("number", "l.r.", "lr", "none", "unknown"):
-            clean_lr = "NGONG/NGONG/52149"
+            clean_lr = "NGONG/NGONG/98401"
         lr_number = clean_lr
 
         closure_info = audit_summary.get("closure", {})

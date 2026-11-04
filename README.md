@@ -10,14 +10,14 @@
   <a href="https://ardhicheck-ivory.vercel.app"><img src="https://img.shields.io/badge/Live%20App-ardhicheck--ivory.vercel.app-10B981?style=for-the-badge&logo=vercel" alt="Live App"></a>
   <img src="https://img.shields.io/badge/Powered%20By-Meta%20Muse%20AI-0064E0?style=for-the-badge&logo=meta" alt="Powered By Meta Muse AI">
   <img src="https://img.shields.io/badge/Cadastral%20Law-Survey%20Act%20Cap%20299-emerald?style=for-the-badge" alt="Survey Act Cap 299">
-  <img src="https://img.shields.io/badge/Tests-119%20Passing-brightgreen?style=for-the-badge" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-120%20Passing-brightgreen?style=for-the-badge" alt="Tests">
 </p>
 
 ---
 
 # ArdhiCheck
 
-> Photograph a Kenyan land survey deed plan and get an authoritative verification audit in seconds: does the paperwork add up mathematically, and does the plot sit on protected land?
+> Photograph a Kenyan land survey deed plan and get an automated verification screening audit in seconds: does the paperwork add up mathematically, and does the plot sit on protected land?
 
 Built during the **Meta Global AI Developer Hackathon** (Oct 26 – Nov 4, 2026).  
 Live Production: **[https://ardhicheck-ivory.vercel.app](https://ardhicheck-ivory.vercel.app)**
@@ -41,11 +41,13 @@ ArdhiCheck integrates official Meta models and architectures across its verifica
 
 | Technology / Model | Role in Pipeline | Endpoint / Runtime |
 |---|---|---|
-| **Meta Muse Spark 1.3** (muse-spark-1.3) | Multimodal survey deed plan extraction & structured output; executive audit report synthesis | Meta Model API (https://api.meta.ai/v1) & Inference host |
-| **Meta SAM 3.1** (sam-3.1) | Text-prompted segmentation of aerial imagery for river buffers and road reserves | Meta Model API (https://api.meta.ai/v1) |
+| **Meta Muse Spark 1.3** (muse-spark-1.3) | Multimodal survey deed plan extraction & structured output; plain-language audit report synthesis | Meta Model API (https://api.meta.ai/v1) & cloud inference |
+| **Meta SAM 3.1** (sam-3.1) | Text-prompted segmentation of aerial imagery for riparian buffers (evaluated on synthetic fixtures) | Meta Model API (https://api.meta.ai/v1) |
 | **Meta Muse Spark Open** (muse-spark-open) | Self-hosted open-weights fallback option for edge and private server deployments | Custom OpenAI-compatible runtime / Local GPU |
 
-When running without active cloud credentials, ArdhiCheck switches cleanly to offline pre-recorded replays, explicitly flagging Offline replay (pre-recorded) across all UI telemetry.
+- **Demo Walkthrough Attribution**: The video walkthrough and live production app run on **Meta Muse Spark 1.3** cloud inference.
+- **Satellite Map Screening**: The interactive map runs deterministic statutory buffer algorithms under EMCA Cap 387 against high-resolution Esri World Imagery; SAM 3.1 segmentation was benchmarked on synthetic aerial fixtures.
+- **Zero-Credential Replay**: When running without active cloud API keys, ArdhiCheck switches cleanly to offline pre-recorded replays, explicitly flagging Offline replay (pre-recorded) across all UI badges.
 
 ## How It Works
 
@@ -60,23 +62,25 @@ The model reads and explains; **pure code calculates**. Every finding in the rep
 
 ## Evaluation Results
 
-ArdhiCheck includes a benchmark suite in [`eval/`](eval/) evaluating **20 synthetic cadastral test plans** with known ground truths across 4 error classes:
+ArdhiCheck includes a deterministic benchmark suite in [eval/](eval/) evaluating **20 synthetic cadastral test plans** with known ground truths across 4 error classes (clean traverses, single-digit clerical typos, gross misclosures, and stated area deficits):
 
-| Metric | LLM-Only Reasoning | ArdhiCheck Hybrid Pipeline |
+| Evaluation Dimension | Measured Result | Specification / Methodology |
 |---|---|---|
-| **Traffic-Light Verdict Accuracy** | 70.0% | **100.0%** |
-| **Traverse Closure Accuracy (Bowditch)** | 50.0% | **100.0%** |
-| **Area Deficit Detection** | 50.0% | **100.0%** |
-| **Blunder Localisation (Typo Ranking)** | 0.0% | **60.0%** (Top-1 Rank) |
-| **Geometry Computation Tokens** | ~850 tokens / plan | **0 tokens** (Pure Python) |
-| **Automated Test Suite** | — | **119 Passing Unit Tests** |
+| **Traffic-Light Verdict Accuracy** | **95.0%** (19/20) | Illustrative statutory thresholds (GREEN, AMBER, RED) |
+| **Traverse Closure Accuracy (Bowditch)** | **100.0%** (20/20) | Strict mathematical closure agreement (< 0.05 m tolerance) |
+| **Area Discrepancy Detection** | **100.0%** (5/5) | Shoelace polygon area vs stated acreage (> 3% threshold) |
+| **Blunder Localisation (Rank-1 Typo)** | **60.0%** (3/5) | Combinatorial single-digit substitution and transposition ranker |
+| **Tokens Consumed for Geometry** | **0 tokens** | Pure Python floating-point math at zero inference cost |
+| **Average Geometry Latency** | **< 3 ms** | Local pure Python execution per survey plan |
+| **Automated Test Suite** | **120 Passing Tests** | Full pytest coverage across pipeline, geometry, and API |
 
-See [`eval/results.md`](eval/results.md) for full case-by-case evaluation data.
+See [eval/results.md](eval/results.md) for full case-by-case evaluation data. Run locally via python -m eval.run_eval.
 
-## Configurable Settings
+## Configurable Screening Settings
 
-- **Traverse Misclosure Tolerance**: Configurable in UI and API (default 1:5,000 relative precision threshold and 0.30m linear tolerance, reflecting Survey Act Cap 299 peri-urban cadastral standards).
-- **Riparian Buffer Setback**: Configurable from 6m to 50m (default 30m under EMCA Cap 387 for rivers and permanent streams).
+- **Traverse Misclosure Tolerance**: Configurable in UI and API (illustrative default: 1:5,000 relative precision threshold and 0.30m linear misclosure, referencing Survey Act Cap 299 peri-urban guidelines; to be confirmed with a licensed land surveyor).
+- **Riparian Buffer Setback**: Configurable from 6m to 50m (illustrative default: 30m referencing EMCA Cap 387 guidelines for rivers and permanent watercourses; subject to statutory determination by WRMA/NEMA).
+- **Stated Area Discrepancy Margin**: Illustrative default 2.0% – 3.0% threshold between computed shoelace boundary polygon and stated deed acreage.
 
 ## Run Locally
 
@@ -116,6 +120,8 @@ All code in this repository was developed between 26 Oct and 4 Nov 2026 for the 
 - **Not a replacement for a licensed surveyor.** Ground beacon relocation and statutory boundary re-establishment must be performed by a surveyor licensed under the Survey Act (Cap 299).
 - Arc 1960 → WGS84 transforms are accurate to metres only; the app includes an uncertainty note and never claims sub-centimetre precision.
 - Benchmark survey deed plans and satellite clips are synthetic test fixtures designed to evaluate boundary closure and reserve overlap. Sample documents used during verification testing have all personal identifiers, crucial owner details, and sensitive attributes redacted or blurred to protect personal privacy.
+- Development screenshots in 
+ecordings/screenshots/ depict benchmark replay captures during algorithmic testing.
 
 ## Licences & Layer Attribution
 

@@ -203,13 +203,15 @@ class ArdhiCheckHandler(BaseHTTPRequestHandler):
             )
             return
 
-        # 2. Rate limiting check for compute & analysis endpoints
+        # 2. Rate limiting check for compute & analysis endpoints (30 req/min per IP)
         if path in ("/api/check", "/api/screen-reserves"):
-            client_ip = (
-                self.client_address[0]
-                if hasattr(self, "client_address") and self.client_address
-                else "127.0.0.1"
-            )
+            forwarded = self.headers.get("x-forwarded-for") or self.headers.get("x-real-ip")
+            if forwarded:
+                client_ip = forwarded.split(",")[0].strip()
+            elif hasattr(self, "client_address") and self.client_address:
+                client_ip = self.client_address[0]
+            else:
+                client_ip = "127.0.0.1"
             now = time.time()
             timestamps = _CLIENT_REQUEST_LOG.setdefault(client_ip, [])
             _CLIENT_REQUEST_LOG[client_ip] = [

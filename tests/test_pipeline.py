@@ -188,7 +188,7 @@ class TestPipelineScenarios:
         mock_client.is_live = False
         mock_client.model = "muse-spark-1.3"
         mock_client.extract_plan_from_image.return_value = PlanExtractionResult(
-            lr_number="KAJIADO/NGONG/52149",
+            lr_number="KAJIADO/NGONG/98401",
             district="Kajiado North",
             locality="Ngong",
             stated_area=0.045,
